@@ -31,7 +31,7 @@
   .bg {
     position: fixed;
     inset: -6%;
-    background: url('assets/1.jpg') center center / cover no-repeat;
+    background: url('/fondo_defecto.PNG') center center / cover no-repeat;
     animation: kenBurns 30s ease-in-out infinite alternate;
     transition: background-image 0s, opacity 1.2s ease;
   }
@@ -749,6 +749,22 @@
         resultadosActuales = data.resultados;
         indiceActual = data.indice || 0;
         mostrarVerso(resultadosActuales[indiceActual], indiceActual);
+      }
+    });
+
+    // ─── Limpiar pantalla (quitar versículo) ──────────────────────────────
+    socket.on("limpiar-pantalla", (data) => {
+      if (data && data.tipo === 'versiculo') {
+        // Limpiar contenido y mostrar fondo por defecto
+        const contenidoDiv = document.getElementById('contenido');
+        contenidoDiv.innerHTML = '<p class="verso esperando">Esperando búsqueda...</p>';
+        document.getElementById('info').textContent = 'Actualización: en espera';
+        resultadosActuales = [];
+        indiceActual = 0;
+        ultimoContenidoMostrado = '';
+        ultimaBusquedaId = null;
+        // Cambiar al fondo por defecto
+        setBackground('/fondo_defecto.PNG');
       }
     });
 

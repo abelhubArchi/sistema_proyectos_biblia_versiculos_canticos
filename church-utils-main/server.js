@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const os = require("os");
 const http = require("http");
 const { Server } = require("socket.io");
+const multer = require("multer");
 const buscador = require("./src/buscador");
 const himnos = require("./src/himnos");
 
@@ -78,7 +79,107 @@ function dividirEnEstrofas(letraCompleta) {
     }));
 }
 
-// Cargar cancionero.json en memoria
+// ==================== MULTER — Subir Fondos ====================
+const uploadStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dest = path.join(__dirname, "public", "assets");
+        cb(null, dest);
+    },
+    filename: (req, file, cb) => {
+        // Mantener nombre original; si ya existe, agregar timestamp
+        const ext = path.extname(file.originalname);
+        const base = path.basename(file.originalname, ext)
+            .replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+        const destPath = path.join(__dirname, "public", "assets", base + ext);
+        const finalName = fs.existsSync(destPath) ? `${base}_${Date.now()}${ext}` : `${base}${ext}`;
+        cb(null, finalName);
+    }
+});
+const uploadFilter = (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) cb(null, true);
+    else cb(new Error('Solo se permiten imágenes JPG, PNG, GIF o WebP'), false);
+};
+const upload = multer({ storage: uploadStorage, fileFilter: uploadFilter, limits: { fileSize: 50 * 1024 * 1024 } });
+
+// ==================== CONVERSIÓN HIMNARIO CALA ====================
+// Regla: dentro de cada himno, cada sección tipo "coro" es marcada como tipo "coro".
+// El coro se canta después de cada estrofa; se intercala en la lista.
+function convertirCala(rawCala) {
+    const himnos = rawCala.himnario ? rawCala.himnario.himnos : (Array.isArray(rawCala) ? rawCala : []);
+    const resultado = [];
+
+    himnos.forEach(himno => {
+        if (!himno || !himno.secciones) return;
+        // Construir estrofas intercalando coro tras cada estrofa
+        const secciones = himno.secciones;
+        // Separar estrofas y coros
+        const soloEstrofas = secciones.filter(s => s.tipo === 'estrofa');
+        const coros = secciones.filter(s => s.tipo === 'coro');
+        const coroTexto = coros.length > 0
+            ? coros[0].lineas.filter(l => l !== '').join('\n')
+            : null;
+
+        // Intercalar: estrofa, coro, estrofa, coro...
+        const estrofasFinales = [];
+        let idx = 1;
+        soloEstrofas.forEach((est, i) => {
+            const texto = est.lineas.filter(l => l !== '').join('\n');
+            estrofasFinales.push({ numero: idx++, texto, tipo: 'estrofa' });
+            if (coroTexto) {
+                estrofasFinales.push({ numero: idx++, texto: coroTexto, tipo: 'coro' });
+            }
+        });
+        // Si no hay estrofas normales pero sí coro, incluir el coro solo
+        if (soloEstrofas.length === 0 && coroTexto) {
+            estrofasFinales.push({ numero: 1, texto: coroTexto, tipo: 'coro' });
+        }
+
+        resultado.push({
+            numero: himno.numero,
+            titulo: himno.titulo,
+            tono: himno.tono || '',
+            idioma: himno.idioma || 'es',
+            fuente: 'cala',
+            cantidadEstrofas: estrofasFinales.length,
+            estrofas: estrofasFinales,
+            letraCompleta: estrofasFinales.map(e => e.texto).join('\n')
+        });
+    });
+    return resultado;
+}
+
+// ==================== CONVERSIÓN HIMNARIO IGLESIA DE DIOS ====================
+function convertirIglesiaDeDios(rawArray) {
+    const resultado = [];
+    rawArray.forEach(himno => {
+        if (!himno || !himno.secciones) return;
+        const estrofasFinales = [];
+        let idx = 1;
+        himno.secciones.forEach(sec => {
+            const texto = sec.lineas.filter(l => l !== '').join('\n');
+            estrofasFinales.push({
+                numero: idx++,
+                texto,
+                tipo: sec.tipo  // 'estrofa' o 'coro'
+            });
+        });
+        resultado.push({
+            numero: himno.numero,
+            titulo: himno.titulo,
+            tono: himno.tono || '',
+            idioma: himno.idioma || 'es',
+            fuente: 'iglesiadedios',
+            cantidadEstrofas: estrofasFinales.length,
+            estrofas: estrofasFinales,
+            letraCompleta: estrofasFinales.map(e => e.texto).join('\n')
+        });
+    });
+    return resultado;
+}
+
+// Cargar cancionero.json en memoria (ahora llamado "Coros")
 let cancionero = [];
 try {
     const cancioneroPath = path.join(__dirname, "src", "himnarios", "cancionero.json");
@@ -86,6 +187,7 @@ try {
 
     // Asegurar que las estrofas se dividan correctamente de forma dinámica
     cancionero = rawData.map(cantico => {
+        cantico.fuente = 'coros';
         if (cantico.letraCompleta) {
             cantico.estrofas = dividirEnEstrofas(cantico.letraCompleta);
         } else if (cantico.diapositivas && cantico.diapositivas.length > 0) {
@@ -97,9 +199,31 @@ try {
         return cantico;
     });
 
-    console.log(`📚 Cargados ${cancionero.length} cánticos correctamente con estrofas optimizadas.`);
+    console.log(`📚 Cargados ${cancionero.length} cánticos (Coros) correctamente.`);
 } catch (error) {
     console.error("❌ Error al cargar cancionero.json:", error);
+}
+
+// Cargar Himnario Cala
+let himarioCala = [];
+try {
+    const calaPath = path.join(__dirname, "src", "himnarios", "himnarioCala.json");
+    const rawCala = JSON.parse(fs.readFileSync(calaPath, "utf-8"));
+    himarioCala = convertirCala(rawCala);
+    console.log(`📖 Cargados ${himarioCala.length} himnos del Himnario Cala.`);
+} catch (error) {
+    console.error("❌ Error al cargar himnarioCala.json:", error);
+}
+
+// Cargar Himnario Iglesia de Dios
+let himnarioIglesiaDeDios = [];
+try {
+    const iddPath = path.join(__dirname, "src", "himnarios", "himnosIglesiaDeDios.json");
+    const rawIDD = JSON.parse(fs.readFileSync(iddPath, "utf-8"));
+    himnarioIglesiaDeDios = convertirIglesiaDeDios(Array.isArray(rawIDD) ? rawIDD : []);
+    console.log(`⛪ Cargados ${himnarioIglesiaDeDios.length} himnos del Himnario Iglesia de Dios.`);
+} catch (error) {
+    console.error("❌ Error al cargar himnosIglesiaDeDios.json:", error);
 }
 
 // ==================== LÍNEAS PERSONALIZADAS ====================
@@ -209,7 +333,7 @@ server.listen(puerto, () => {
 
 // ==================== SOCKET.IO CONFIGURACIÓN ====================
 let ultimoCanticoProyectado = null;
-let fondoActual = "assets/1.jpg";
+let fondoActual = "/fondo_defecto.PNG";
 
 // Navegación de versículos (anterior/siguiente)
 let ultimoVersiculo = null;
@@ -251,6 +375,20 @@ io.on("connection", (socket) => {
     // Evento para navegar versículos (anterior/siguiente)
     socket.on("navegar-versiculo", (direccion) => {
         io.emit("navegar-versiculo", direccion);
+    });
+
+    // Evento para limpiar la pantalla (quitar versículo o terminar canto)
+    socket.on("limpiar-pantalla", (data) => {
+        if (data && data.tipo === 'versiculo') {
+            ultimoVersiculo = null;
+            ultimaBusqueda = { texto: '', resultados: [], tipo: null, timestamp: null };
+        } else if (data && data.tipo === 'cantico') {
+            ultimoCanticoProyectado = null;
+        }
+        // Resetear fondo al por defecto
+        fondoActual = "/fondo_defecto.PNG";
+        io.emit("cambiar-fondo", fondoActual);
+        io.emit("limpiar-pantalla", data);
     });
 });
 
@@ -349,19 +487,38 @@ app.delete("/api/canticos/:titulo/lineas", (req, res) => {
 
 app.get("/api/canticos", (req, res) => {
     const query = req.query.q;
+    const fuente = req.query.fuente || 'coros'; // 'coros' | 'cala' | 'iglesiadedios'
+
+    let coleccion;
+    if (fuente === 'cala') coleccion = himarioCala;
+    else if (fuente === 'iglesiadedios') coleccion = himnarioIglesiaDeDios;
+    else coleccion = cancionero;
+
     if (!query || query.trim() === '') {
-        return res.json(cancionero);
+        return res.json(coleccion);
     }
     const normalizedQuery = normalizarTexto(query);
-    const resultados = cancionero.filter(cantico => {
+    const resultados = coleccion.filter(cantico => {
         const tituloNorm = normalizarTexto(cantico.titulo || "");
         if (tituloNorm.includes(normalizedQuery)) return true;
+        if (cantico.numero && String(cantico.numero).startsWith(query.trim())) return true;
         if (cantico.estrofas && Array.isArray(cantico.estrofas)) {
             return cantico.estrofas.some(est => normalizarTexto(est.texto || "").includes(normalizedQuery));
         }
         return false;
     });
     res.json(resultados);
+});
+
+// ==================== SUBIR FONDO ====================
+app.post("/api/subir-fondo", upload.single('fondo'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No se recibió ningún archivo' });
+    }
+    const url = `assets/${req.file.filename}`;
+    const nombre = path.basename(req.file.filename, path.extname(req.file.filename));
+    console.log(`🖼️  Fondo subido: ${req.file.filename}`);
+    res.json({ exito: true, url, nombre, tipo: 'imagen' });
 });
 
 // ==================== API DE VERSÍCULOS ====================

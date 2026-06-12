@@ -41,7 +41,7 @@
       inset: 0;
     }
 
-    .bg-image-1 { background-image: url('/assets/1.jpg'); }
+    .bg-image-1 { background-image: url('/fondo_defecto.PNG'); }
 
     /* Gradientes animados */
     @keyframes gradientAnimation {
@@ -301,6 +301,48 @@
       letter-spacing: 0.10em;
       color: rgba(245, 240, 232, 0.42);
     }
+    /* ── ESTILO ESPECIAL PARA COROS (Iglesia de Dios) ── */
+    .lyrics-content.es-coro {
+      color: #ffd700;
+      text-shadow:
+        0 0 20px rgba(255, 215, 0, 0.9),
+        0 0 40px rgba(255, 180, 0, 0.7),
+        0 0 80px rgba(255, 150, 0, 0.5),
+        0 4px 20px rgba(0,0,0,0.6);
+      animation: coroShimmer 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes coroShimmer {
+      0%   { text-shadow: 0 0 20px rgba(255,215,0,0.9), 0 0 50px rgba(255,180,0,0.7), 0 0 100px rgba(255,150,0,0.5); filter: brightness(1); }
+      50%  { text-shadow: 0 0 30px rgba(255,230,0,1),   0 0 70px rgba(255,200,0,0.9), 0 0 140px rgba(255,170,0,0.7); filter: brightness(1.15); }
+      100% { text-shadow: 0 0 25px rgba(255,215,0,0.95),0 0 60px rgba(255,190,0,0.8), 0 0 120px rgba(255,160,0,0.6); filter: brightness(1.08); }
+    }
+
+    /* Partículas doradas para coros */
+    .particulas-coro {
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particula {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffd700 30%, rgba(255,200,0,0.3) 100%);
+      opacity: 0;
+      animation: floatParticula var(--dur, 4s) var(--delay, 0s) ease-in infinite;
+    }
+
+    @keyframes floatParticula {
+      0%   { transform: translate(0, 0) scale(0.5); opacity: 0; }
+      10%  { opacity: 0.9; }
+      80%  { opacity: 0.4; }
+      100% { transform: translate(var(--dx, 20px), var(--dy, -120px)) scale(1.5); opacity: 0; }
+    }
   </style>
 </head>
 
@@ -312,6 +354,9 @@
 
   <!-- Fondo de video MP4 -->
   <video id="bg-video" autoplay loop muted playsinline></video>
+
+  <!-- Partículas doradas de coro -->
+  <div class="particulas-coro" id="particulas-coro"></div>
 
   <!-- Logo -->
   <div class="logo">
@@ -425,6 +470,7 @@
       const titleEl     = document.getElementById('song-title');
       const lyricsEl    = document.getElementById('lyrics-content');
       const indicatorEl = document.getElementById('verse-indicator');
+      const esCoro      = data.esCoro === true;
 
       // Fade out
       lyricsEl.classList.add('hidden-state');
@@ -442,13 +488,103 @@
           indicatorEl.textContent = `${data.estrofaActual}`;
         }
 
+        // Estilo especial para coros
+        if (esCoro) {
+          lyricsEl.classList.add('es-coro');
+          indicatorEl.textContent = '🎶 CORO';
+          iniciarParticulas();
+        } else {
+          lyricsEl.classList.remove('es-coro');
+          detenerParticulas();
+        }
+
         titleEl.style.opacity     = '0.8';
-        indicatorEl.style.opacity = '0.35';
+        indicatorEl.style.opacity = esCoro ? '0.85' : '0.35';
 
         // Fade back in
         lyricsEl.classList.remove('hidden-state');
       }, 600);
     }
+
+    // ── Partículas doradas para coro ────────────────────────────────
+    let particulasInterval = null;
+
+    function crearParticula() {
+      const container = document.getElementById('particulas-coro');
+      if (!container) return;
+      const p = document.createElement('div');
+      p.className = 'particula';
+      const x = Math.random() * 100;
+      const dx = (Math.random() - 0.5) * 80;
+      const dy = -(60 + Math.random() * 100);
+      const dur = 3 + Math.random() * 3;
+      const delay = Math.random() * 2;
+      const size = 3 + Math.random() * 5;
+      p.style.cssText = `
+        left: ${x}%;
+        bottom: 10%;
+        width: ${size}px;
+        height: ${size}px;
+        --dx: ${dx}px;
+        --dy: ${dy}px;
+        --dur: ${dur}s;
+        --delay: ${delay}s;
+      `;
+      container.appendChild(p);
+      setTimeout(() => p.remove(), (dur + delay) * 1000 + 500);
+    }
+
+    function iniciarParticulas() {
+      detenerParticulas();
+      // Crear particulas iniciales
+      for (let i = 0; i < 15; i++) {
+        setTimeout(() => crearParticula(), i * 150);
+      }
+      particulasInterval = setInterval(() => {
+        for (let i = 0; i < 3; i++) crearParticula();
+      }, 600);
+    }
+
+    function detenerParticulas() {
+      if (particulasInterval) {
+        clearInterval(particulasInterval);
+        particulasInterval = null;
+      }
+      const container = document.getElementById('particulas-coro');
+      if (container) container.innerHTML = '';
+    }
+
+    // ── Limpiar pantalla (terminar canto) ────────────────────────────────
+    socket.on("limpiar-pantalla", (data) => {
+      if (data && data.tipo === 'cantico') {
+        const titleEl     = document.getElementById('song-title');
+        const lyricsEl    = document.getElementById('lyrics-content');
+        const indicatorEl = document.getElementById('verse-indicator');
+
+        // Detener partículas
+        detenerParticulas();
+
+        // Fade out
+        lyricsEl.classList.add('hidden-state');
+        titleEl.style.opacity     = '0';
+        indicatorEl.style.opacity = '0';
+
+        setTimeout(() => {
+          // Regresar a estado de espera
+          lyricsEl.classList.remove('es-coro');
+          lyricsEl.classList.add('waiting-state');
+          lyricsEl.innerHTML = 'IGLESIA VIDA NUEVA <br> Esperando transmision...';
+          titleEl.textContent = 'PROYECCIÓN';
+          indicatorEl.textContent = 'CÁNTICOS';
+
+          // Fade back in
+          lyricsEl.classList.remove('hidden-state');
+        }, 600);
+
+        // Cambiar al fondo por defecto
+        setWorshipBackground('/fondo_defecto.PNG');
+      }
+    });
   </script>
 </body>
 
