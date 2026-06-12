@@ -1,0 +1,19 @@
+{
+  "name": "church-utils",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:xtiam57/church-utils.git",
+  "author": "Christiam Mena <christiam.mena@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "biblia": "node generate-bible.js && node generate-hymnals.js",
+    "build": "node generate-hymnals.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.11.0",
+    "nodemon": "^3.1.14",
+    "socket.io": "^4.8.3"
+  }
+}

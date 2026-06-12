@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Versículos Bíblicos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f7b307 0%, #140a55 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .buscador-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .buscador {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .buscador:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .predicciones {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .predicciones.active {
+            display: block;
+        }
+
+        .prediccion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .prediccion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .prediccion-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .prediccion-main {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .prediccion-preview {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .resultados {
+            margin-top: 30px;
+        }
+
+        .resultado-item {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .prediccion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prediccion-contenido {
+            flex: 1;
+        }
+
+        .btn-copiar {
+            width: 40px;
+            height: 40px;
+
+            border: none;
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            background: rgba(255, 215, 0, .15);
+            color: #FFD700;
+
+            font-size: 18px;
+
+            transition: .2s;
+        }
+
+        .btn-copiar:hover {
+            transform: scale(1.1);
+
+            background: rgba(255, 215, 0, .3);
+
+            box-shadow:
+                0 0 10px rgba(255, 215, 0, .4),
+                0 0 20px rgba(255, 215, 0, .2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .resultado-referencia {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .resultado-texto {
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .ejemplos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .ejemplo-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .ejemplo-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Buscador Bíblico</h1>
+
+        <div class="buscador-wrapper">
+            <input type="text" id="buscador" class="buscador" placeholder="Busca: apo 21:4, jn 3:16, amor, fe..."
+                autocomplete="off">
+            <div id="predicciones" class="predicciones"></div>
+        </div>
+
+        <div class="ejemplos">
+            <button class="ejemplo-btn" onclick="buscar('apo 21:4')">Apo 21:4</button>
+            <button class="ejemplo-btn" onclick="buscar('jn 3:16')">Jn 3:16</button>
+            <button class="ejemplo-btn" onclick="buscar('amor')">Amor</button>
+            <button class="ejemplo-btn" onclick="buscar('fe')">Fe</button>
+        </div>
+
+        <div id="error" class="error"></div>
+        <div id="loading" class="loading">⏳ Buscando...</div>
+        <div id="resultados" class="resultados"></div>
+        <div class="info"> Escribe una cita (ej: apo 21:4) o una palabra para buscar</div>
+
+        <div class="control-panel-extras" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h3 style="font-size: 16px; color: #444; margin-bottom: 12px; text-align: center; font-family: inherit;">
+                Panel de Control Adicional</h3>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                <button class="ejemplo-btn"
+                    style="background: #667eea; color: white; padding: 10px 16px; font-weight: 600;"
+                    onclick="irAAdminCanticos()">
+                    CONTROL DE ALABANZAS
+                </button>
+            </div>
+
+            <h4 style="font-size: 13px; color: #666; margin-bottom: 10px; text-align: center; font-family: inherit;">
+                Fondo de Proyección de Versículos</h4>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <button class="ejemplo-btn" onclick="cambiarFondo('assets/1.jpg')"> Amanecer (Fondo 1)</button>
+                <button class="ejemplo-btn" onclick="cambiarFondo('assets/2.jpg')"> Galaxia (Fondo 2)</button>
+                <button class="ejemplo-btn" onclick="cambiarFondo('assets/3.jpg')"> Océano (Fondo 3)</button>
+                <button class="ejemplo-btn" onclick="cambiarFondo('assets/4.jpg')"> Naturaleza (Fondo 4)</button>
+                <button class="ejemplo-btn" onclick="cambiarFondo('assets/background.jpg')"> Clásico (Fondo 5)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargar Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const buscadorInput = document.getElementById('buscador');
+        const prediccionesDiv = document.getElementById('predicciones');
+        const resultadosDiv = document.getElementById('resultados');
+        const errorDiv = document.getElementById('error');
+        const loadingDiv = document.getElementById('loading');
+
+        let timeoutPredic = null;
+        let selectedIndex = -1;
+
+        // Evento para predicciones en tiempo real
+        buscadorInput.addEventListener('input', (e) => {
+            clearTimeout(timeoutPredic);
+            const texto = e.target.value.trim();
+
+            if (texto.length === 0) {
+                prediccionesDiv.classList.remove('active');
+                return;
+            }
+
+            timeoutPredic = setTimeout(() => {
+                obtenerPredicciones(texto);
+            }, 200);
+        });
+
+        // Eventos del teclado para navegar predicciones
+        buscadorInput.addEventListener('keydown', (e) => {
+            const items = prediccionesDiv.querySelectorAll('.prediccion-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                actualizarSeleccion(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                actualizarSeleccion(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    const item = items[selectedIndex];
+                    const completo = item.dataset.completo || item.textContent;
+                    buscadorInput.value = completo;
+                    prediccionesDiv.classList.remove('active');
+                    buscar(completo);
+                } else {
+                    buscar(buscadorInput.value);
+                }
+            } else if (e.key === 'Escape') {
+                prediccionesDiv.classList.remove('active');
+            }
+        });
+
+        // Cerrar predicciones al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.buscador-wrapper')) {
+                prediccionesDiv.classList.remove('active');
+            }
+        });
+
+        async function obtenerPredicciones(texto) {
+            try {
+                const response = await fetch('/predicciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto })
+                });
+
+                const data = await response.json();
+
+                if (data.predicciones && data.predicciones.length > 0) {
+                    mostrarPredicciones(data.predicciones);
+                } else {
+                    prediccionesDiv.classList.remove('active');
+                }
+            } catch (error) {
+                console.error('Error al obtener predicciones:', error);
+            }
+        }
+
+        function mostrarPredicciones(predicciones) {
+            prediccionesDiv.innerHTML = predicciones.map((pred, index) => `
+        <div class="prediccion-item" data-completo="${pred.completo || ''}" data-index="${index}">
+            
+            <div class="prediccion-contenido">
+                <div class="prediccion-main">${pred.display}</div>
+                ${pred.texto ? `<div class="prediccion-preview">${pred.texto}</div>` : ''}
+            </div>
+
+            <button
+                class="btn-copiar"
+                data-texto="${pred.completo || pred.display}"
+                title="Copiar al buscador">
+                ✏️
+            </button>
+
+        </div>
+    `).join('');
+
+            prediccionesDiv.classList.add('active');
+            selectedIndex = -1;
+
+            // Click en la predicción = buscar
+            prediccionesDiv.querySelectorAll('.prediccion-item').forEach(item => {
+
+                item.addEventListener('click', (e) => {
+
+                    // Ignorar si se hizo click en el botón
+                    if (e.target.classList.contains('btn-copiar')) {
+                        return;
+                    }
+
+                    const completo = item.dataset.completo || item.textContent;
+
+                    buscadorInput.value = completo;
+
+                    prediccionesDiv.classList.remove('active');
+
+                    buscar(completo);
+                });
+            });
+
+            // Click en el botón ✏️ = copiar al input
+            prediccionesDiv.querySelectorAll('.btn-copiar').forEach(btn => {
+
+                btn.addEventListener('click', (e) => {
+
+                    e.stopPropagation();
+
+                    const texto = btn.dataset.texto;
+
+                    buscadorInput.value = texto;
+
+                    buscadorInput.focus();
+
+                    buscadorInput.setSelectionRange(
+                        texto.length,
+                        texto.length
+                    );
+
+                    prediccionesDiv.classList.remove('active');
+                });
+            });
+        }
+
+        function actualizarSeleccion(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedIndex);
+                if (index === selectedIndex) {
+                    item.scrollIntoView({ block: 'nearest' });
+                }
+            });
+        }
+
+        async function buscar(texto) {
+            if (!texto.trim()) return;
+
+            errorDiv.classList.remove('show');
+            resultadosDiv.innerHTML = '';
+            loadingDiv.classList.add('show');
+
+            try {
+                const response = await fetch('/buscar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ busqueda: texto })
+                });
+
+                const data = await response.json();
+                loadingDiv.classList.remove('show');
+
+                if (data.tipo === 'error') {
+                    mostrarError(data.mensaje);
+                } else if (data.resultados && data.resultados.length > 0) {
+                    mostrarResultados(data.resultados);
+                } else {
+                    mostrarError('No se encontraron resultados');
+                }
+            } catch (error) {
+                loadingDiv.classList.remove('show');
+                mostrarError('Error en la búsqueda: ' + error.message);
+            }
+        }
+
+        function mostrarResultados(resultados) {
+            resultadosDiv.innerHTML = resultados.map(resultado => `
+                <div class="resultado-item">
+                    <div class="resultado-referencia">
+                        ${resultado.libroNombre || resultado.libro} ${resultado.capitulo}:${resultado.versiculo}
+                    </div>
+                    <div class="resultado-texto">"${resultado.texto}"</div>
+                </div>
+            `).join('');
+        }
+
+        function mostrarError(mensaje) {
+            errorDiv.textContent = '❌ ' + mensaje;
+            errorDiv.classList.add('show');
+        }
+
+        // Configuración de Socket.IO para redirección y cambio de fondo
+        const socket = io();
+
+        // Al entrar al buscador, redirigir automáticamente la pantalla a /pantalla
+        socket.emit("cambiar-pantalla", "/pantalla");
+
+        function irAAdminCanticos() {
+            socket.emit("cambiar-pantalla", "/canticospantalla");
+            setTimeout(() => {
+                window.location.href = "/canticosadmin";
+            }, 100);
+        }
+
+        function cambiarFondo(url) {
+            socket.emit("cambiar-fondo", url);
+        }
+    </script>
+</body>
+
+</html>

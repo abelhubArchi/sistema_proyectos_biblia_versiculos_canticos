@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyección de Cánticos</title>
+  <link rel="stylesheet" href="/assets/fonts/fonts.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body,
+    html {
+      height: 100%;
+      overflow: hidden;
+      background-color: #03050c;
+      font-family: 'Outfit', sans-serif;
+      color: #ffffff;
+      cursor: none;
+    }
+
+    /* ── Fondo de imagen / GIF ── */
+    .bg {
+      position: fixed;
+      inset: -6%;
+      z-index: 1;
+      background-position: center center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      animation: kenBurns 30s ease-in-out infinite alternate;
+      transition: opacity 1.2s ease-in-out;
+    }
+
+    /* GIFs: sin kenBurns para no cortar animación */
+    .bg.is-gif {
+      animation: none;
+      inset: 0;
+    }
+
+    .bg-image-1 { background-image: url('/assets/1.jpg'); }
+
+    /* Gradientes animados */
+    @keyframes gradientAnimation {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .gradient-aurora    { background: linear-gradient(135deg,#0A2E36,#1C0A35,#0A1C35,#0f2c1f); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
+    .gradient-atardecer { background: linear-gradient(135deg,#2c0f20,#360a0a,#1a0826,#3b200a); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
+    .gradient-paz       { background: linear-gradient(135deg,#09122c,#161e38,#0e273c,#1f112e); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
+    .gradient-mistico   { background: linear-gradient(135deg,#18092a,#0b1c2b,#2b0b1c,#0d091a); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
+
+    /* ── Fondo de video MP4 ── */
+    #bg-video {
+      position: fixed;
+      inset: -1%;
+      width: 102vw;
+      height: 102vh;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      pointer-events: none;
+    }
+
+    /* Background ambient overlay */
+    .worship-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      background: radial-gradient(ellipse at bottom, rgba(9, 14, 36, 0.45), rgba(3, 5, 12, 0.85));
+      overflow: hidden;
+    }
+
+    /* Ambient glow blobs */
+    .glow-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.18;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .blob-1 {
+      width: 75vw; height: 75vw;
+      background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+      top: -25%; left: -20%;
+      animation: moveBlob1 40s infinite alternate ease-in-out;
+    }
+
+    .blob-2 {
+      width: 85vw; height: 85vw;
+      background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+      bottom: -35%; right: -25%;
+      animation: moveBlob2 45s infinite alternate ease-in-out;
+    }
+
+    .blob-3 {
+      width: 65vw; height: 65vw;
+      background: radial-gradient(circle, #f97316 0%, transparent 70%);
+      top: 25%; left: 35%;
+      animation: moveBlob3 50s infinite alternate ease-in-out;
+    }
+
+    @keyframes moveBlob1 {
+      0%   { transform: translate(0,0) scale(1); }
+      50%  { transform: translate(12%,18%) scale(1.1); }
+      100% { transform: translate(-8%,-10%) scale(0.9); }
+    }
+    @keyframes moveBlob2 {
+      0%   { transform: translate(0,0) scale(1.05); }
+      50%  { transform: translate(-18%,-12%) scale(0.85); }
+      100% { transform: translate(8%,8%) scale(1.15); }
+    }
+    @keyframes moveBlob3 {
+      0%   { transform: translate(0,0) scale(0.95); }
+      50%  { transform: translate(-10%,15%) scale(1.1); }
+      100% { transform: translate(15%,-15%) scale(0.9); }
+    }
+
+    @keyframes kenBurns {
+      0%   { transform: scale(1.06) translate(0%,0%); }
+      50%  { transform: scale(1.10) translate(-1.5%,-0.8%); }
+      100% { transform: scale(1.06) translate(1.2%,0.5%); }
+    }
+
+    /* Elegant dark vignette */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 20%, rgba(3,5,12,0.75) 100%);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* Presentation Screen layout — deja espacio al banner inferior */
+    .escena {
+      position: relative;
+      z-index: 10;
+      height: calc(100vh - 72px);
+      display: grid;
+      grid-template-rows: 15% 70% 15%;
+      align-items: center;
+      padding: 0 8%;
+    }
+
+    /* Song Title */
+    .song-title {
+      text-align: center;
+      font-size: clamp(1rem, 2.2vw, 1.4rem);
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: #e2c475;
+      text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(226,196,117,0.25);
+      align-self: end;
+      transition: opacity 600ms ease;
+      font-family: 'Outfit', sans-serif;
+      opacity: 0.8;
+    }
+
+    /* Lyrics wrapper */
+    .lyrics-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Lyrics — tamaño mayor para TV/proyector */
+    .lyrics-content {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(3.8rem, 7vw, 6.5rem);
+      font-weight: 600;
+      line-height: 1.5;
+      text-align: center;
+      color: #ffffff;
+      text-shadow:
+        0 4px 20px rgba(0,0,0,0.75),
+        0 2px 4px rgba(0,0,0,0.5),
+        0 0 60px rgba(0,0,0,0.3);
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 500ms cubic-bezier(0.25,1,0.5,1), transform 900ms cubic-bezier(0.25,1,0.5,1);
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+
+    .lyrics-content.hidden-state {
+      opacity: 0;
+      transform: scale(1.025);
+      transition: opacity 600ms cubic-bezier(0.25,1,0.5,1), transform 500ms cubic-bezier(0.25,1,0.5,1);
+    }
+
+    /* Verse indicator */
+    .verse-indicator {
+      text-align: center;
+      font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      align-self: start;
+      transition: opacity 600ms ease;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    /* Waiting state */
+    .waiting-state {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4) !important;
+    }
+
+    /* Logo */
+    .logo {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      z-index: 1000;
+    }
+
+    .logo img {
+      width: 100px;
+      height: auto;
+      filter: drop-shadow(0 0 15px rgba(255,255,255,0.433)) drop-shadow(0 0 40px rgba(255,185,7,0.3));
+      animation: aparecerLogo 1.5s ease-out, brilloLogo 4s ease-in-out infinite;
+    }
+
+    .logo-fallback {
+      font-size: 36px;
+      display: none;
+      color: #e2c475;
+      text-shadow: 0 0 10px rgba(226,196,117,0.5);
+    }
+
+    @keyframes aparecerLogo {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes brilloLogo {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.5)) drop-shadow(0 0 40px rgba(255,255,255,0.3)); }
+      50%       { filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)) drop-shadow(0 0 60px rgba(255,255,255,0.5)); }
+    }
+
+    /* ── BANNER IGLESIA VIDA NUEVA (permanente, parte inferior) ── */
+    .iglesia-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: linear-gradient(180deg, transparent 0%, rgba(3, 5, 12, 0.80) 30%, rgba(3, 5, 12, 0.97) 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 0 24px;
+      pointer-events: none;
+    }
+
+    /* Línea dorada superior del banner */
+    .iglesia-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(226, 196, 117, 0.45), transparent);
+    }
+
+    .iglesia-nombre {
+      font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+      font-size: clamp(0.9rem, 1.7vw, 1.25rem);
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #e2c475;
+      text-shadow: 0 0 16px rgba(226, 196, 117, 0.4), 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .iglesia-lema {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.65rem, 1.15vw, 0.88rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.10em;
+      color: rgba(245, 240, 232, 0.42);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Fondos de imágenes y GIFs con cross-fade -->
+  <div class="bg bg-image-1"></div>
+  <div class="bg bg-image-2" style="opacity: 0;"></div>
+
+  <!-- Fondo de video MP4 -->
+  <video id="bg-video" autoplay loop muted playsinline></video>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="/assets/logo.png" alt="Logo"
+      onerror="this.style.display='none'; document.querySelector('.logo-fallback').style.display='block'" />
+    <div class="logo-fallback">⛪</div>
+  </div>
+
+  <!-- Ambient Moving Background -->
+  <div class="worship-bg">
+    <div class="glow-blob blob-1"></div>
+    <div class="glow-blob blob-2"></div>
+    <div class="glow-blob blob-3"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- Projection Elements -->
+  <div class="escena">
+    <div id="song-title" class="song-title" style="opacity: 0;">PROYECCIÓN</div>
+    <div class="lyrics-wrapper">
+      <div id="lyrics-content" class="lyrics-content waiting-state">
+        IGLESIA VIDA NUEVA <br>
+        Esperando transmision...
+      </div>
+    </div>
+    <div id="verse-indicator" class="verse-indicator" style="opacity: 0;">CÁNTICOS</div>
+  </div>
+
+  <!-- Banner permanente Iglesia Vida Nueva -->
+  <div class="iglesia-banner" aria-label="Identidad de la iglesia">
+    <div class="iglesia-nombre">Iglesia Vida Nueva</div>
+    <div class="iglesia-lema">Una Iglesia Para Un Mundo Dividido</div>
+  </div>
+
+  <!-- Socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Escuchar redirección de pantalla
+    socket.on("cambiar-pantalla", (targetUrl) => {
+      if (targetUrl === "/pantalla") {
+        window.location.href = "/pantalla";
+      }
+    });
+
+    // ── Gestión de fondos con cross-fade + video + gradientes ──────────
+    let currentActiveBgLayer = 1;
+
+    function setWorshipBackground(bgValue) {
+      const layer1   = document.querySelector(".bg-image-1");
+      const layer2   = document.querySelector(".bg-image-2");
+      const videoEl  = document.getElementById("bg-video");
+      if (!layer1 || !layer2 || !videoEl) return;
+
+      const activeImgLayer   = currentActiveBgLayer === 1 ? layer1 : layer2;
+      const inactiveImgLayer = currentActiveBgLayer === 1 ? layer2 : layer1;
+
+      // Reset clase/imagen en la capa inactiva
+      inactiveImgLayer.className = "bg " + (currentActiveBgLayer === 1 ? "bg-image-2" : "bg-image-1");
+      inactiveImgLayer.style.backgroundImage = "";
+
+      const isVideo    = bgValue && bgValue.toLowerCase().endsWith('.mp4');
+      const isGradient = bgValue && bgValue.startsWith('gradient:');
+      const isGif      = bgValue && bgValue.toLowerCase().endsWith('.gif');
+
+      if (isVideo) {
+        const formattedUrl = bgValue.startsWith('/') ? bgValue : '/' + bgValue;
+        videoEl.src = formattedUrl;
+        videoEl.load();
+        videoEl.play().catch(e => console.log("Reproducción automática prevenida", e));
+        videoEl.style.opacity = "1";
+        layer1.style.opacity  = "0";
+        layer2.style.opacity  = "0";
+      } else {
+        // Desvanecer video si estaba activo
+        videoEl.style.opacity = "0";
+        setTimeout(() => {
+          if (videoEl.style.opacity === "0") { videoEl.pause(); videoEl.src = ""; }
+        }, 1200);
+
+        if (isGradient) {
+          const gradientName = bgValue.split(":")[1];
+          inactiveImgLayer.classList.add("gradient-" + gradientName);
+        } else if (isGif) {
+          inactiveImgLayer.classList.add("is-gif");
+          const formattedUrl = bgValue.startsWith('/') ? bgValue : '/' + bgValue;
+          inactiveImgLayer.style.backgroundImage = `url('${formattedUrl}')`;
+        } else {
+          const formattedUrl = bgValue.startsWith('/') ? bgValue : '/' + bgValue;
+          inactiveImgLayer.style.backgroundImage = `url('${formattedUrl}')`;
+        }
+
+        // Cross-fade
+        inactiveImgLayer.style.opacity = "1";
+        activeImgLayer.style.opacity   = "0";
+        currentActiveBgLayer = currentActiveBgLayer === 1 ? 2 : 1;
+      }
+    }
+
+    socket.on("cambiar-fondo", (url) => {
+      setWorshipBackground(url);
+    });
+
+    // ── Recibir y mostrar cánticos ─────────────────────────────────────
+    socket.on('cambio-estrofa', (data) => {
+      updateDisplay(data);
+    });
+
+    function updateDisplay(data) {
+      const titleEl     = document.getElementById('song-title');
+      const lyricsEl    = document.getElementById('lyrics-content');
+      const indicatorEl = document.getElementById('verse-indicator');
+
+      // Fade out
+      lyricsEl.classList.add('hidden-state');
+      titleEl.style.opacity     = '0';
+      indicatorEl.style.opacity = '0';
+
+      setTimeout(() => {
+        lyricsEl.classList.remove('waiting-state');
+        lyricsEl.innerHTML = data.texto.replace(/\n/g, '<br>');
+        titleEl.textContent = data.titulo;
+
+        if (data.totalEstrofas) {
+          indicatorEl.textContent = `Estrofa ${data.estrofaActual} de ${data.totalEstrofas}`;
+        } else {
+          indicatorEl.textContent = `${data.estrofaActual}`;
+        }
+
+        titleEl.style.opacity     = '0.8';
+        indicatorEl.style.opacity = '0.35';
+
+        // Fade back in
+        lyricsEl.classList.remove('hidden-state');
+      }, 600);
+    }
+  </script>
+</body>
+
+</html>

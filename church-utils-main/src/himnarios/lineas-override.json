@@ -1,0 +1,54 @@
+{
+  "TE EXALTARÉ, MI DIOS, MI REY": [
+    {
+      "id": 1,
+      "texto": "Te exaltaré, mi Dios, mi Rey",
+      "seleccionada": true
+    },
+    {
+      "id": 2,
+      "texto": "Y bendeciré tu nombre,",
+      "seleccionada": true
+    },
+    {
+      "id": 3,
+      "texto": "Eternamente y para siempre",
+      "seleccionada": true
+    },
+    {
+      "id": 4,
+      "texto": "Cada día te bendeciré",
+      "seleccionada": true
+    },
+    {
+      "id": 5,
+      "texto": "Y alabaré tu nombre",
+      "seleccionada": true
+    },
+    {
+      "id": 6,
+      "texto": "Eternamente y para siempre",
+      "seleccionada": true
+    },
+    {
+      "id": 7,
+      "texto": "Grande es Je ho vá",
+      "seleccionada": true
+    },
+    {
+      "id": 8,
+      "texto": "Y digno de suprema alabanza",
+      "seleccionada": true
+    },
+    {
+      "id": 9,
+      "texto": "Y su grandeza es inescrutable",
+      "seleccionada": true
+    },
+    {
+      "id": 10,
+      "texto": "Cada día te bendeciré.",
+      "seleccionada": true
+    }
+  ]
+}
