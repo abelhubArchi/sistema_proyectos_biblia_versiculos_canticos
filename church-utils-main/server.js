@@ -306,6 +306,28 @@ function guardarLineasOverride() {
     });
 }
 
+// ==================== COROS PERSONALIZADOS ====================
+const corosOverridePath = process.pkg
+    ? path.join(path.dirname(process.execPath), "coros-override.json")
+    : path.join(__dirname, "src", "himnarios", "coros-override.json");
+let corosOverride = {};
+
+try {
+    if (fs.existsSync(corosOverridePath)) {
+        corosOverride = JSON.parse(fs.readFileSync(corosOverridePath, "utf-8"));
+        console.log(`🎶  Cargados coros personalizados para ${Object.keys(corosOverride).length} cántico(s).`);
+    }
+} catch (e) {
+    console.error("❌ Error al cargar coros-override.json:", e);
+    corosOverride = {};
+}
+
+function guardarCorosOverride() {
+    fs.writeFile(corosOverridePath, JSON.stringify(corosOverride, null, 2), "utf-8", (err) => {
+        if (err) console.error("❌ Error al guardar coros-override.json:", err);
+    });
+}
+
 // Función para dividir un cántico en líneas individuales (para el modo por líneas)
 function dividirEnLineas(cantico) {
     const key = cantico.titulo;
@@ -342,7 +364,7 @@ if (process.pkg) {
     app.use("/assets/embedded", express.static(assetsEmbebidos));
 }
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(morgan("dev"));
 
@@ -629,8 +651,31 @@ app.get("/api/canticos", (req, res) => {
             return cantico.estrofas.some(est => normalizarTexto(est.texto || "").includes(normalizedQuery));
         }
         return false;
+    }).map(cantico => {
+        if (corosOverride[cantico.titulo]) {
+            const canticoCopy = JSON.parse(JSON.stringify(cantico));
+            if (canticoCopy.estrofas) {
+                canticoCopy.estrofas.forEach((est, idx) => {
+                    est.tipo = corosOverride[canticoCopy.titulo].includes(idx) ? 'coro' : 'estrofa';
+                });
+            }
+            return canticoCopy;
+        }
+        return cantico;
     });
     res.json(resultados);
+});
+
+// Guardar coros personalizados para un cántico
+app.post("/api/canticos/:titulo/coros", (req, res) => {
+    const titulo = decodeURIComponent(req.params.titulo);
+    const { corosIndices } = req.body;
+    if (!Array.isArray(corosIndices)) {
+        return res.status(400).json({ error: 'Se esperaba un array corosIndices' });
+    }
+    corosOverride[titulo] = corosIndices;
+    guardarCorosOverride();
+    res.json({ exito: true, titulo, corosIndices });
 });
 
 // ==================== SUBIR FONDO ====================

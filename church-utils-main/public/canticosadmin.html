@@ -561,6 +561,11 @@
         background: rgba(255, 255, 255, 0.03);
       }
 
+      .verses-list-container .verse-card:last-child,
+      .verses-list-container .line-card:last-child {
+        margin-bottom: 140px !important;
+      }
+
       .verse-content {
         font-size: 1.15rem !important;
         line-height: 1.5;
@@ -613,6 +618,21 @@
 
       header {
         padding: 12px 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .header-actions {
+        justify-content: center;
+      }
+
+      .header-actions .btn {
+        padding: 6px 8px !important;
+        font-size: 0.75rem !important;
+        height: auto !important;
+        flex: 1;
+        justify-content: center;
       }
 
       .header-title span {
@@ -657,6 +677,14 @@
         display: none;
         /* Hide icon on mobile header to save space */
       }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     /* Modal Styles for Background Selection */
@@ -777,25 +805,29 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     /* Badge de tipo coro en tarjetas de estrofa */
     .verse-card.coro-card {
       border-color: rgba(226, 196, 117, 0.35);
       background: rgba(226, 196, 117, 0.06);
     }
+
     .verse-card.coro-card .verse-number {
       color: var(--gold);
     }
+
     .coro-badge {
       font-size: 0.7rem;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 8px;
-      background: rgba(226,196,117,0.15);
-      border: 1px solid rgba(226,196,117,0.4);
+      background: rgba(226, 196, 117, 0.15);
+      border: 1px solid rgba(226, 196, 117, 0.4);
       color: var(--gold);
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
+
     /* Tabs de himnario */
     .himnario-tabs {
       display: flex;
@@ -804,6 +836,7 @@
       border-bottom: 1px solid var(--border-color);
       flex-wrap: wrap;
     }
+
     .himnario-tab {
       font-family: inherit;
       font-size: 0.78rem;
@@ -812,36 +845,41 @@
       border-radius: 8px 8px 0 0;
       border: 1px solid transparent;
       border-bottom: none;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
       bottom: -1px;
     }
+
     .himnario-tab.active {
       background: var(--bg-card);
       border-color: var(--border-color);
       border-bottom-color: var(--bg-main);
       color: var(--text-main);
     }
+
     .himnario-tab:hover:not(.active) {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text-main);
     }
+
     /* Indicador de numero de himno */
     .numero-badge {
       font-size: 0.7rem;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 6px;
-      background: rgba(99,102,241,0.12);
-      border: 1px solid rgba(99,102,241,0.25);
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
       color: var(--accent);
       margin-right: 6px;
     }
+
     /* ── SISTEMA DE LÍNEAS ── */
     .mode-tabs {
+      height: 100px;
       display: flex;
       gap: 8px;
       margin-bottom: 16px;
@@ -854,7 +892,7 @@
       padding: 7px 16px;
       border-radius: 20px;
       border: 1px solid var(--border-color);
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -867,7 +905,7 @@
     }
 
     .mode-tab:hover:not(.active) {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text-main);
     }
 
@@ -884,7 +922,7 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-color);
       border-radius: 10px;
       padding: 10px 12px;
@@ -892,18 +930,18 @@
     }
 
     .line-card:hover {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
     .line-card.selected {
       border-color: var(--border-active);
-      background: rgba(99,102,241,0.06);
+      background: rgba(99, 102, 241, 0.06);
     }
 
     .line-card.projected {
       border-color: var(--danger);
-      background: rgba(239,68,68,0.06);
+      background: rgba(239, 68, 68, 0.06);
     }
 
     /* Checkbox personalizado */
@@ -933,7 +971,7 @@
 
     .line-text-input {
       flex: 1;
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-active);
       border-radius: 6px;
       padding: 4px 8px;
@@ -943,7 +981,10 @@
       width: 100%;
     }
 
-    .line-text-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(99,102,241,0.3); }
+    .line-text-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    }
 
     .line-actions {
       display: flex;
@@ -966,16 +1007,24 @@
       transition: all 0.15s;
     }
 
-    .btn-line-action:hover { background: rgba(255,255,255,0.08); color: var(--text-main); }
-    .btn-line-action.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+    .btn-line-action:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    .btn-line-action.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
 
     /* Botón agregar línea */
     .btn-add-line {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255,255,255,0.03);
-      border: 1px dashed rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
       border-radius: 10px;
       color: var(--text-muted);
       padding: 10px 14px;
@@ -990,7 +1039,7 @@
     .btn-add-line:hover {
       border-color: var(--accent);
       color: var(--accent);
-      background: rgba(99,102,241,0.06);
+      background: rgba(99, 102, 241, 0.06);
     }
 
     /* Badge de override */
@@ -998,8 +1047,8 @@
       font-size: 0.7rem;
       padding: 2px 7px;
       border-radius: 8px;
-      background: rgba(226,196,117,0.12);
-      border: 1px solid rgba(226,196,117,0.25);
+      background: rgba(226, 196, 117, 0.12);
+      border: 1px solid rgba(226, 196, 117, 0.25);
       color: var(--gold);
       font-weight: 600;
       margin-left: 6px;
@@ -1016,7 +1065,9 @@
       transition: opacity 0.4s;
     }
 
-    .save-status.visible { opacity: 1; }
+    .save-status.visible {
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -1038,7 +1089,7 @@
         <span>CONTROL DE ALABANZAS</span>
       </div>
     </div>
-    <div style="display: flex; gap: 8px; align-items: center;">
+    <div class="header-actions">
       <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.8rem; height: auto;"
         onclick="abrirFondoModal()">
         🌅 Fondos
@@ -1047,10 +1098,12 @@
         onclick="triggerSubirFondo()">
         📤 Subir Fondo
       </button>
-      <input type="file" id="subir-fondo-input" accept=".jpg,.jpeg,.png,.gif,.webp" style="display:none" onchange="subirFondoArchivo(this)"\u003e
-      <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.8rem; height: auto; background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #ef4444;"
+      <input type="file" id="subir-fondo-input" accept=".jpg,.jpeg,.png,.gif,.webp" style="display:none"
+        onchange="subirFondoArchivo(this)">
+      <button class="btn btn-secondary"
+        style="padding: 8px 12px; font-size: 0.8rem; height: auto; background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #ef4444;"
         onclick="terminarCanto()">
-        ⏹️ Terminar Canto
+        ⏹️ Terminar
       </button>
       <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.8rem; height: auto;"
         onclick="irABuscador()">
@@ -1072,7 +1125,8 @@
       <div class="himnario-tabs" id="himnario-tabs">
         <button class="himnario-tab active" data-fuente="coros" onclick="cambiarFuente('coros')">🎵 Coros</button>
         <button class="himnario-tab" data-fuente="cala" onclick="cambiarFuente('cala')">📖 Himnario Cala</button>
-        <button class="himnario-tab" data-fuente="iglesiadedios" onclick="cambiarFuente('iglesiadedios')">⛪ Iglesia de Dios</button>
+        <button class="himnario-tab" data-fuente="iglesiadedios" onclick="cambiarFuente('iglesiadedios')">⛪ Iglesia de
+          Dios</button>
       </div>
       <div class="search-container">
         <input type="text" id="search-input" class="search-input" placeholder="Buscar por título, número o letra..."
@@ -1108,23 +1162,45 @@
       </div>
       <!-- Colores animados también en el modal de fondos -->
       <div style="margin-top:12px; border-top:1px solid var(--border-color); padding-top:12px;">
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Colores Animados</div>
+        <div
+          style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">
+          Colores Animados</div>
         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
-          <div onclick="seleccionarFondo('gradient:aurora')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#0A2E36,#1C0A35,#0A1C35,#0f2c1f);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Aurora">
+          <div onclick="seleccionarFondo('gradient:aurora')"
+            style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#0A2E36,#1C0A35,#0A1C35,#0f2c1f);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;"
+            title="Aurora">
             <span style="font-size:0.6rem;color:rgba(255,255,255,0.7);width:100%;text-align:center;">Aurora</span>
           </div>
-          <div onclick="seleccionarFondo('gradient:atardecer')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#2c0f20,#360a0a,#1a0826,#3b200a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Atardecer">
+          <div onclick="seleccionarFondo('gradient:atardecer')"
+            style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#2c0f20,#360a0a,#1a0826,#3b200a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;"
+            title="Atardecer">
             <span style="font-size:0.6rem;color:rgba(255,255,255,0.7);width:100%;text-align:center;">Atardecer</span>
           </div>
-          <div onclick="seleccionarFondo('gradient:paz')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#09122c,#161e38,#0e273c,#1f112e);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Paz">
+          <div onclick="seleccionarFondo('gradient:paz')"
+            style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#09122c,#161e38,#0e273c,#1f112e);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;"
+            title="Paz">
             <span style="font-size:0.6rem;color:rgba(255,255,255,0.7);width:100%;text-align:center;">Paz</span>
           </div>
-          <div onclick="seleccionarFondo('gradient:mistico')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#18092a,#0b1c2b,#2b0b1c,#0d091a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Místico">
+          <div onclick="seleccionarFondo('gradient:mistico')"
+            style="height:50px;border-radius:8px;cursor:pointer;border:2px solid rgba(255,255,255,0.1);background:linear-gradient(135deg,#18092a,#0b1c2b,#2b0b1c,#0d091a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;"
+            title="Místico">
             <span style="font-size:0.6rem;color:rgba(255,255,255,0.7);width:100%;text-align:center;">Místico</span>
           </div>
         </div>
       </div>
-      <style>@keyframes modalGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}</style>
+      <style>
+        @keyframes modalGrad {
+
+          0%,
+          100% {
+            background-position: 0% 50%
+          }
+
+          50% {
+            background-position: 100% 50%
+          }
+        }
+      </style>
     </div>
   </div>
 
@@ -1264,18 +1340,6 @@
 
         <div class="control-workspace">
           <div class="verses-list-container" id="verses-list">
-            ${activeSong.estrofas.map((est, i) => {
-              const esCoro = est.tipo === 'coro';
-              return `
-                <div class="verse-card ${i === selectedVerseIndex ? 'selected' : ''} ${esCoro ? 'coro-card' : ''}" id="verse-card-${i}" onclick="selectVerse(${i})">
-                  <div class="verse-number">
-                    <span>${esCoro ? '🎶 Coro' : `Estrofa ${i + 1}`}</span>
-                    ${esCoro ? '<span class="coro-badge">CORO</span>' : '<span class="live-indicator">EN VIVO</span>'}
-                  </div>
-                  <div class="verse-content">${est.texto}</div>
-                </div>
-              `;
-            }).join('')}
           </div>
 
           <div class="preview-pane" id="preview-pane">
@@ -1313,10 +1377,20 @@
           </div>
         </div>
       `;
-
-      updateProjectedUI();
+      renderEstrofasView();
       document.getElementById('verses-list').scrollTop = 0;
       cargarLineas(activeSong.titulo);
+
+      // Proyectar solo el título automáticamente al seleccionar
+      socket.emit("cambio-estrofa", {
+        titulo: activeSong.titulo,
+        soloTitulo: true,
+        texto: '',
+        tono: activeSong.tono || ''
+      });
+      projectedSongTitle = activeSong.titulo;
+      projectedVerseIndex = -1; // Ninguna estrofa seleccionada en vivo
+      updateProjectedUI();
     }
 
     // Select specific verse in workspace (without projecting)
@@ -1494,7 +1568,8 @@
           titulo: activeSong.titulo,
           estrofaActual: 'Líneas',
           totalEstrofas: null,
-          texto
+          texto,
+          tono: activeSong.tono || ''
         };
         socket.emit("cambio-estrofa", payload);
         projectedSongTitle = activeSong.titulo;
@@ -1509,7 +1584,8 @@
           totalEstrofas: activeSong.estrofas.length,
           texto: estrofa.texto,
           esCoro: estrofa.tipo === 'coro',
-          fuente: activeSong.fuente || 'coros'
+          fuente: activeSong.fuente || 'coros',
+          tono: activeSong.tono || ''
         };
         socket.emit("cambio-estrofa", payload);
         projectedSongTitle = activeSong.titulo;
@@ -1585,6 +1661,32 @@
       } catch (e) { console.error('Error restaurando:', e); }
     }
 
+    async function toggleCoro(index) {
+      if (!activeSong) return;
+      const estrofa = activeSong.estrofas[index];
+      estrofa.tipo = estrofa.tipo === 'coro' ? 'estrofa' : 'coro';
+      renderEstrofasView();
+      if (selectedVerseIndex === index) {
+        selectVerse(index);
+      }
+
+      // Guardar permanentemente en el backend
+      const corosIndices = activeSong.estrofas
+        .map((est, idx) => est.tipo === 'coro' ? idx : -1)
+        .filter(idx => idx !== -1);
+
+      try {
+        await fetch(`/api/canticos/${encodeURIComponent(activeSong.titulo)}/coros`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ corosIndices })
+        });
+        mostrarSaveStatus(); // opcional, muestra feedback visual si existe
+      } catch (err) {
+        console.error("Error guardando coros:", err);
+      }
+    }
+
     function renderEstrofasView() {
       const versesListEl = document.getElementById('verses-list');
       if (!versesListEl || !activeSong) return;
@@ -1593,7 +1695,12 @@
         return `
           <div class="verse-card ${i === selectedVerseIndex ? 'selected' : ''} ${esCoro ? 'coro-card' : ''}" id="verse-card-${i}" onclick="selectVerse(${i})">
             <div class="verse-number">
-              <span>${esCoro ? '🎶 Coro' : `Estrofa ${i + 1}`}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span>${esCoro ? '🎶 Coro' : `Estrofa ${i + 1}`}</span>
+                <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.65rem; height:auto;" onclick="event.stopPropagation(); toggleCoro(${i})">
+                  ${esCoro ? 'Quitar Coro' : 'Marcar Coro'}
+                </button>
+              </div>
               ${esCoro ? '<span class="coro-badge">CORO</span>' : '<span class="live-indicator">EN VIVO</span>'}
             </div>
             <div class="verse-content">${est.texto}</div>

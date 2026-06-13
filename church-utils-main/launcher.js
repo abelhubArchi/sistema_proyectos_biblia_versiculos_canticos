@@ -28,9 +28,9 @@ let config;
 
 try {
   config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-  console.log("✅ Configuración cargada correctamente.");
+  console.log(" Configuración cargada correctamente.");
 } catch (e) {
-  console.log("⚠️  No se encontró config.json, usando valores por defecto.");
+  console.log("  No se encontró config.json, usando valores por defecto.");
   config = {
     hotspot: { ssid: "IGLESIA_VIDA_NUEVA", password: "VidaNueva2026" },
     servidor: { puerto: 3000, abrirNavegador: true },
@@ -49,10 +49,10 @@ function imprimirBanner(info) {
   const sublnea = "─".repeat(66);
 
   console.log("\n" + linea);
-  console.log("  ⛪  SISTEMA DE PROYECCIÓN — " + config.iglesia.nombre.toUpperCase());
+  console.log("    SISTEMA DE PROYECCIÓN — " + config.iglesia.nombre.toUpperCase());
   console.log(linea);
   console.log("");
-  console.log("  📡 Estado de Red:");
+  console.log("   Estado de Red:");
   console.log("     Tipo:       " + info.tipo.toUpperCase());
   console.log("     Red:        " + (info.nombre || "N/A"));
   console.log("     IP Local:   " + info.ip);
@@ -60,14 +60,14 @@ function imprimirBanner(info) {
 
   if (info.hotspotActivo) {
     console.log("");
-    console.log("  📶 Punto de Acceso:");
+    console.log("   Punto de Acceso:");
     console.log("     SSID:       " + info.hotspotSSID);
     console.log("     Contraseña: " + config.hotspot.password);
   }
 
   console.log("");
   console.log("  " + sublnea);
-  console.log("  🌐 URLs Disponibles:");
+  console.log("   URLs Disponibles:");
   console.log("     Panel de Estado:         http://" + info.ip + ":" + config.servidor.puerto + "/panel");
   console.log("     Control de Versículos:   http://" + info.ip + ":" + config.servidor.puerto + "/");
   console.log("     Pantalla de Versículos:  http://" + info.ip + ":" + config.servidor.puerto + "/pantalla");
@@ -75,25 +75,25 @@ function imprimirBanner(info) {
   console.log("     Pantalla de Cánticos:    http://" + info.ip + ":" + config.servidor.puerto + "/canticospantalla");
   console.log("  " + sublnea);
   console.log("");
-  console.log("  💡 Escanea los códigos QR desde el panel para conectar celulares.");
-  console.log("  💡 Presiona Ctrl+C para detener el servidor.");
+  console.log("   Escanea los códigos QR desde el panel para conectar celulares.");
+  console.log("   Presiona Ctrl+C para detener el servidor.");
   console.log("");
   console.log(linea + "\n");
 }
 
 // ── Inicio principal ───────────────────────────────────────────────
 async function iniciar() {
-  console.log("\n⛪ Iniciando Sistema de Proyección para Iglesias...\n");
+  console.log("\n Iniciando Sistema de Proyección para Iglesias...\n");
 
   // ─── Paso 1: Detectar red ─────────────────────────────────────────
-  console.log("📡 Detectando red disponible...");
+  console.log(" Detectando red disponible...");
   let infoRed = networkManager.detectarRed();
 
   let hotspotResultado = null;
 
   if (!networkManager.hayRedDisponible()) {
-    console.log("⚠️  No se detectó ninguna red disponible.");
-    console.log("📶 Intentando crear punto de acceso Wi-Fi...");
+    console.log("  No se detectó ninguna red disponible.");
+    console.log(" Intentando crear punto de acceso Wi-Fi...");
 
     hotspotResultado = networkManager.crearHotspot(
       config.hotspot.ssid,
@@ -101,10 +101,10 @@ async function iniciar() {
     );
 
     if (hotspotResultado.exito) {
-      console.log("✅ " + hotspotResultado.mensaje);
+      console.log("IP: " + hotspotResultado.mensaje);
       infoRed = networkManager.detectarRed(); // Actualizar estado
     } else {
-      console.log("⚠️  " + hotspotResultado.mensaje);
+      console.log("Error: " + hotspotResultado.mensaje);
       if (hotspotResultado.instrucciones) {
         console.log("");
         hotspotResultado.instrucciones.forEach(linea => console.log("   " + linea));
@@ -114,7 +114,7 @@ async function iniciar() {
       infoRed = networkManager.detectarRed();
     }
   } else {
-    console.log("✅ Red detectada: " + infoRed.tipo.toUpperCase() + " — " + infoRed.nombre);
+    console.log(" Red detectada: " + infoRed.tipo.toUpperCase() + " — " + infoRed.nombre);
     console.log("   IP: " + infoRed.ip);
   }
 
@@ -125,18 +125,18 @@ async function iniciar() {
   process.env.CHURCH_LAUNCHER = "true";
 
   // ─── Paso 3: Iniciar servidor ─────────────────────────────────────
-  console.log("🚀 Iniciando servidor Express + Socket.IO...");
+  console.log(" Iniciando servidor Express + Socket.IO...");
 
   // Importar y ejecutar server.js (se inicia con server.listen)
   const serverModule = require("./server");
 
   // ─── Paso 4: Generar códigos QR ──────────────────────────────────
-  console.log("📱 Generando códigos QR...");
+  console.log(" Generando códigos QR...");
   try {
     await qrGenerator.generarTodosLosQR(infoRed.ip, config.servidor.puerto);
-    console.log("✅ Códigos QR generados correctamente.");
+    console.log(" Códigos QR generados correctamente.");
   } catch (e) {
-    console.error("⚠️  Error generando códigos QR:", e.message);
+    console.error("  Error generando códigos QR:", e.message);
   }
 
   // ─── Paso 5: Imprimir banner ──────────────────────────────────────
@@ -145,7 +145,7 @@ async function iniciar() {
   // ─── Paso 6: Abrir navegador ──────────────────────────────────────
   if (config.servidor.abrirNavegador) {
     const panelUrl = `http://${infoRed.ip === "localhost" ? "localhost" : infoRed.ip}:${config.servidor.puerto}/panel`;
-    console.log("🌐 Abriendo panel en el navegador...");
+    console.log(" Abriendo panel en el navegador...");
 
     try {
       // Dynamic import for ESM 'open' package
@@ -157,7 +157,7 @@ async function iniciar() {
         const { exec } = require("child_process");
         exec(`start "" "${panelUrl}"`);
       } catch (e2) {
-        console.log("⚠️  No se pudo abrir el navegador automáticamente.");
+        console.log("  No se pudo abrir el navegador automáticamente.");
         console.log("   Abre manualmente: " + panelUrl);
       }
     }
@@ -165,7 +165,7 @@ async function iniciar() {
 
   // ─── Paso 7: Monitorear cambios de red ────────────────────────────
   networkManager.monitorearRed(async (nuevoEstado) => {
-    console.log("\n📡 ¡Cambio de red detectado!");
+    console.log("\n ¡Cambio de red detectado!");
     console.log("   Nueva IP: " + nuevoEstado.ip);
     console.log("   Tipo: " + nuevoEstado.tipo);
 
@@ -191,15 +191,15 @@ async function iniciar() {
 
   // ─── Limpieza al cerrar ───────────────────────────────────────────
   process.on("SIGINT", () => {
-    console.log("\n\n🛑 Cerrando servidor...");
+    console.log("\n\n Cerrando servidor...");
     networkManager.detenerMonitoreo();
 
     if (infoRed.hotspotActivo) {
-      console.log("📶 Deteniendo punto de acceso...");
+      console.log(" Deteniendo punto de acceso...");
       networkManager.detenerHotspot();
     }
 
-    console.log("👋 ¡Hasta pronto! — " + config.iglesia.nombre);
+    console.log(" ¡Hasta pronto! — " + config.iglesia.nombre);
     process.exit(0);
   });
 

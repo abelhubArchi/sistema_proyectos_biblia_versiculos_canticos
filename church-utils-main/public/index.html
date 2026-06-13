@@ -242,6 +242,7 @@
         <div class="buscador-wrapper">
             <input type="text" id="buscador" class="buscador" placeholder="Busca: apo 21:4, jn 3:16, amor, fe..."
                 autocomplete="off">
+            <span id="clear-buscador" style="display:none; position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:24px; color:#999; line-height:1;" title="Limpiar búsqueda">&times;</span>
             <div id="predicciones" class="predicciones"></div>
         </div>
 
@@ -288,6 +289,12 @@
                 </button>
                 <input type="file" id="subir-fondo-input" accept=".jpg,.jpeg,.png,.gif,.webp" style="display:none" onchange="subirFondoArchivo(this)">
             </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <label style="font-size: 14px; color: #555; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; user-select: none;">
+                    <input type="checkbox" id="auto-fondo-checkbox" onchange="toggleAutoFondo(this.checked)">
+                    <span>Cambiar fondo automáticamente al cambiar versículo</span>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -327,6 +334,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const buscadorInput = document.getElementById('buscador');
+        const clearBuscadorBtn = document.getElementById('clear-buscador');
         const prediccionesDiv = document.getElementById('predicciones');
         const resultadosDiv = document.getElementById('resultados');
         const errorDiv = document.getElementById('error');
@@ -342,6 +350,18 @@
             capitulo: null,
             versiculo: null
         };
+
+        // Lógica del botón X para limpiar el buscador
+        buscadorInput.addEventListener('input', () => {
+            clearBuscadorBtn.style.display = buscadorInput.value.length > 0 ? 'block' : 'none';
+        });
+
+        clearBuscadorBtn.addEventListener('click', () => {
+            buscadorInput.value = '';
+            clearBuscadorBtn.style.display = 'none';
+            prediccionesDiv.classList.remove('active');
+            buscadorInput.focus();
+        });
 
         // Evento para predicciones en tiempo real
         buscadorInput.addEventListener('input', (e) => {
@@ -513,6 +533,7 @@
                     estadoVersiculos.capitulo = data.resultados[0].capitulo;
                     estadoVersiculos.versiculo = data.resultados[0].versiculo;
                     mostrarResultados(data.resultados);
+                    triggerAutoFondo(); // Cambiar fondo si la opción está activada
                 } else {
                     mostrarError('No se encontraron resultados');
                 }
@@ -570,6 +591,7 @@
                 estadoVersiculos.versiculo = verso.versiculo;
                 
                 socket.emit("navegar-versiculo", "siguiente");
+                triggerAutoFondo(); // Cambiar fondo si la opción está activada
             } else {
                 try {
                     const response = await fetch('/api/versiculo-siguiente', {
@@ -604,6 +626,7 @@
                 estadoVersiculos.versiculo = verso.versiculo;
                 
                 socket.emit("navegar-versiculo", "anterior");
+                triggerAutoFondo(); // Cambiar fondo si la opción está activada
             } else {
                 try {
                     const response = await fetch('/api/versiculo-anterior', {
@@ -632,6 +655,51 @@
         // ══════════════════════════════════════════════════════════════
         let fondosList = [];
         let fondoActualActivo = "";
+        let autoFondoEnabled = false;
+
+        // Cargar fondos al inicio para usarlos en fondo automático
+        async function cargarFondosInicial() {
+            try {
+                const response = await fetch('/api/fondos');
+                fondosList = await response.json();
+            } catch (err) {
+                console.error("Error al cargar los fondos:", err);
+            }
+        }
+        cargarFondosInicial();
+
+        function toggleAutoFondo(checked) {
+            autoFondoEnabled = checked;
+        }
+
+        const gradientesEstaticos = [
+            'gradient:aurora',
+            'gradient:atardecer',
+            'gradient:paz',
+            'gradient:mistico'
+        ];
+
+        function triggerAutoFondo() {
+            if (autoFondoEnabled) {
+                const combinados = [...fondosList.map(f => f.url || f), ...gradientesEstaticos];
+                if (combinados.length > 0) {
+                    // Evitar repetir el fondo actual si es posible
+                    let index;
+                    let fullUrl;
+                    let intentos = 0;
+                    do {
+                        index = Math.floor(Math.random() * combinados.length);
+                        const url = combinados[index];
+                        fullUrl = url.startsWith('gradient:') ? url : '/' + url;
+                        intentos++;
+                    } while (fullUrl === fondoActualActivo && combinados.length > 1 && intentos < 5);
+
+                    socket.emit("cambiar-fondo", fullUrl);
+                    fondoActualActivo = fullUrl;
+                    actualizarFondoActivoUI();
+                }
+            }
+        }
 
         // Sincronizar fondo actual con otros clientes
         socket.on("cambiar-fondo", (url) => {

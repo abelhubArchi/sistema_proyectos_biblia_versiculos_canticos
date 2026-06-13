@@ -208,13 +208,12 @@
       pointer-events: none;
     }
 
-    /* Presentation Screen layout — deja espacio al banner inferior */
     .escena {
       position: relative;
       z-index: 10;
-      height: calc(100vh - 72px);
+      height: calc(100vh - 85px);
       display: grid;
-      grid-template-rows: 15% 70% 15%;
+      grid-template-rows: 20% 60% 20%;
       align-items: center;
       padding: 0 8%;
     }
@@ -233,21 +232,104 @@
       font-family: 'Outfit', sans-serif;
       opacity: 0.8;
     }
+    
+    .song-title.title-coro-mode {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700;
+      color: #ffd700;
+      letter-spacing: 10px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+      opacity: 1;
+    }
 
     /* Lyrics wrapper */
     .lyrics-wrapper {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100%;
       overflow: hidden;
+      transition: opacity 500ms;
+    }
+
+    /* Big Title Display */
+    .big-title-display {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 800ms ease, transform 800ms ease;
+      transform: scale(0.95);
+      z-index: 20;
+      padding: 0 5%;
+    }
+    .big-title-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(5rem, 9vw, 10rem);
+      font-weight: 700;
+      color: #e2c475;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      line-height: 1.2;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(226, 196, 117, 0.4);
+    }
+    .big-title-tone {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      color: rgba(226, 196, 117, 0.9);
+      margin-top: 25px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      display: none;
+    }
+    .big-title-display.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .coro-label {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      color: #ffd700;
+      font-weight: bold;
+      letter-spacing: 0.3em;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+      margin-bottom: 20px;
+      font-family: 'Outfit', sans-serif;
+      animation: fadeInCoro 0.5s ease forwards;
+    }
+    
+    @keyframes fadeInCoro {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tone-indicator {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      color: #e2c475;
+      font-weight: bold;
+      text-shadow: 0 2px 10px rgba(226, 196, 117, 0.4);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 600ms ease;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 2px;
     }
 
     /* Lyrics — tamaño mayor para TV/proyector */
     .lyrics-content {
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      font-size: clamp(3.8rem, 7vw, 6.5rem);
+      font-size: clamp(3rem, 6vw, 5.5rem);
       font-weight: 600;
       line-height: 1.5;
       text-align: center;
@@ -342,7 +424,7 @@
       left: 0;
       right: 0;
       z-index: 100;
-      height: 72px;
+      height: 85px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -368,7 +450,7 @@
 
     .iglesia-nombre {
       font-family: 'Cormorant Garamond', 'Playfair Display', serif;
-      font-size: clamp(0.9rem, 1.7vw, 1.25rem);
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
       font-weight: 600;
       letter-spacing: 0.22em;
       text-transform: uppercase;
@@ -378,7 +460,7 @@
 
     .iglesia-lema {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(0.65rem, 1.15vw, 0.88rem);
+      font-size: clamp(0.8rem, 1.4vw, 1.1rem);
       font-weight: 400;
       font-style: italic;
       letter-spacing: 0.10em;
@@ -479,10 +561,18 @@
     <div class="vignette"></div>
   </div>
 
+  <!-- Tono indicator -->
+  <div id="tone-indicator" class="tone-indicator"></div>
+
   <!-- Projection Elements -->
   <div class="escena">
+    <div id="big-title-display" class="big-title-display">
+      <div id="big-title-text" class="big-title-text"></div>
+      <div id="big-title-tone" class="big-title-tone"></div>
+    </div>
     <div id="song-title" class="song-title" style="opacity: 0;">PROYECCIÓN</div>
     <div class="lyrics-wrapper">
+      <div id="coro-label" class="coro-label" style="display: none;">CORO</div>
       <div id="lyrics-content" class="lyrics-content waiting-state">
         IGLESIA VIDA NUEVA <br>
         Esperando transmision...
@@ -576,51 +666,94 @@
       const titleEl = document.getElementById('song-title');
       const lyricsEl = document.getElementById('lyrics-content');
       const indicatorEl = document.getElementById('verse-indicator');
+      const coroLabelEl = document.getElementById('coro-label');
+      const toneEl = document.getElementById('tone-indicator');
+      const bigTitleEl = document.getElementById('big-title-display');
+      const lyricsWrapper = document.querySelector('.lyrics-wrapper');
+      
       const esCoro = data.esCoro === true;
 
-      // Fade out
+      // Reset states
       lyricsEl.classList.add('hidden-state');
       titleEl.style.opacity = '0';
       indicatorEl.style.opacity = '0';
+      if(coroLabelEl) coroLabelEl.style.display = 'none';
 
-      setTimeout(() => {
-        lyricsEl.classList.remove('waiting-state');
-        lyricsEl.innerHTML = data.texto.replace(/\n/g, '<br>');
-        titleEl.textContent = data.titulo;
+      if (data.soloTitulo) {
+        // Modo "Solo Título"
+        lyricsWrapper.style.opacity = '0';
+        toneEl.style.opacity = '0'; // Ocultar tono normal de la esquina
+        detenerParticulas();
+        
+        setTimeout(() => {
+          document.getElementById('big-title-text').textContent = data.titulo;
+          const toneSub = document.getElementById('big-title-tone');
+          if (data.tono && data.tono.trim() !== '') {
+            toneSub.textContent = `Tono: ${data.tono}`;
+            toneSub.style.display = 'block';
+          } else {
+            toneSub.style.display = 'none';
+          }
+          bigTitleEl.classList.add('active');
+        }, 300);
+      } else {
+        // Modo Normal de Proyección de Estrofa
+        if (bigTitleEl) bigTitleEl.classList.remove('active');
+        lyricsWrapper.style.opacity = '1';
 
-        if (data.totalEstrofas) {
-          indicatorEl.textContent = `Estrofa ${data.estrofaActual} de ${data.totalEstrofas}`;
+        // Update Tono immediately with fade out/in effect
+        if (data.tono && data.tono.trim() !== '') {
+          toneEl.textContent = `Tono: ${data.tono}`;
+          toneEl.style.opacity = '1';
         } else {
-          indicatorEl.textContent = `${data.estrofaActual}`;
+          toneEl.style.opacity = '0';
         }
 
-        // Estilo especial para coros
-        if (esCoro) {
-          lyricsEl.classList.add('es-coro');
-          indicatorEl.textContent = '🎶 CORO';
-          iniciarParticulas();
-        } else {
-          lyricsEl.classList.remove('es-coro');
-          detenerParticulas();
-        }
+        setTimeout(() => {
+          lyricsEl.classList.remove('waiting-state');
+          lyricsEl.innerHTML = data.texto.replace(/\n/g, '<br>');
+          titleEl.textContent = data.titulo;
 
-        titleEl.style.opacity = '0.8';
-        indicatorEl.style.opacity = esCoro ? '0.85' : '0.35';
+          if (data.totalEstrofas) {
+            indicatorEl.textContent = `Estrofa ${data.estrofaActual} de ${data.totalEstrofas}`;
+          } else {
+            indicatorEl.textContent = `${data.estrofaActual}`;
+          }
 
-        // Fade back in
-        lyricsEl.classList.remove('hidden-state');
+          // Estilo especial para coros
+          if (esCoro) {
+            titleEl.textContent = 'CORO';
+            titleEl.classList.add('title-coro-mode');
+            lyricsEl.classList.add('es-coro');
+            indicatorEl.textContent = '🎶 ' + data.titulo;
+            if(coroLabelEl) coroLabelEl.style.display = 'none';
+            iniciarParticulas();
+          } else {
+            titleEl.textContent = data.titulo;
+            titleEl.classList.remove('title-coro-mode');
+            lyricsEl.classList.remove('es-coro');
+            if(coroLabelEl) coroLabelEl.style.display = 'none';
+            detenerParticulas();
+          }
 
-        // Auto-fit: ajustar tamaño para que quepa en pantalla
-        autoFitText(lyricsEl);
-      }, 600);
+          titleEl.style.opacity = esCoro ? '1' : '0.8';
+          indicatorEl.style.opacity = esCoro ? '0.85' : '0.35';
+
+          // Fade back in
+          lyricsEl.classList.remove('hidden-state');
+
+          // Auto-fit: ajustar tamaño para que quepa en pantalla
+          autoFitText(lyricsEl);
+        }, 600);
+      }
     }
 
     // ── Auto-fit text — reduce font-size until text fits in viewport ─────
     function autoFitText(el) {
       const wrapper = el.parentElement; // .lyrics-wrapper
       if (!wrapper) return;
-      const maxH = wrapper.clientHeight * 0.95;
-      const maxW = wrapper.clientWidth * 0.95;
+      const maxH = wrapper.clientHeight * 0.85;
+      const maxW = wrapper.clientWidth * 0.90;
 
       // Reset to base size
       el.style.fontSize = '';
@@ -688,9 +821,13 @@
         const titleEl = document.getElementById('song-title');
         const lyricsEl = document.getElementById('lyrics-content');
         const indicatorEl = document.getElementById('verse-indicator');
+        const bigTitleEl = document.getElementById('big-title-display');
+        const lyricsWrapper = document.querySelector('.lyrics-wrapper');
 
         // Detener partículas
         detenerParticulas();
+        if (bigTitleEl) bigTitleEl.classList.remove('active');
+        lyricsWrapper.style.opacity = '1';
 
         // Fade out
         lyricsEl.classList.add('hidden-state');
@@ -700,6 +837,7 @@
         setTimeout(() => {
           // Regresar a estado de espera
           lyricsEl.classList.remove('es-coro');
+          titleEl.classList.remove('title-coro-mode');
           lyricsEl.classList.add('waiting-state');
           lyricsEl.innerHTML = 'IGLESIA VIDA NUEVA <br> Esperando transmision...';
           titleEl.textContent = 'PROYECCIÓN';
