@@ -9,9 +9,61 @@ const multer = require("multer");
 const buscador = require("./src/buscador");
 const himnos = require("./src/himnos");
 
+// ── Resolver ruta de assets de forma robusta (desarrollo y EXE pkg) ───
+// En pkg, __dirname apunta al snapshot virtual (solo lectura).
+// Necesitamos una carpeta ESCRIBIBLE junto al .exe o al proyecto.
+function resolverRutaAssets() {
+    // Opción 1: junto al ejecutable en disco
+    const execDir = path.dirname(process.execPath);
+    const assetsPorExe = path.join(execDir, 'assets');
+
+    // Opción 2: dentro de public/assets desde __dirname (desarrollo)
+    const assetsDesarrollo = path.join(__dirname, 'public', 'assets');
+
+    // En modo EXE de pkg, process.pkg existe
+    if (process.pkg) {
+        // Crear la carpeta si no existe
+        if (!fs.existsSync(assetsPorExe)) {
+            try { fs.mkdirSync(assetsPorExe, { recursive: true }); } catch (e) { /* ignore */ }
+        }
+        return assetsPorExe;
+    }
+
+    // En desarrollo normal
+    return assetsDesarrollo;
+}
+
+const ASSETS_DIR = resolverRutaAssets();
+console.log('📁 Carpeta de assets:', ASSETS_DIR);
+
+// ── Módulos adicionales (sistema de red y QR) ──────────────────────
+// Se cargan de forma segura: si no existen, el servidor sigue funcionando normalmente
+let networkManager = null;
+let qrGenerator = null;
+let appConfig = null;
+
+try { networkManager = require("./network-manager"); } catch (e) { /* opcional */ }
+try { qrGenerator = require("./qr-generator"); } catch (e) { /* opcional */ }
+try {
+    // En EXE de pkg, buscar config junto al ejecutable primero
+    const cfgPath = process.pkg
+        ? path.join(path.dirname(process.execPath), "config.json")
+        : path.join(__dirname, "config.json");
+    if (fs.existsSync(cfgPath)) {
+        appConfig = JSON.parse(fs.readFileSync(cfgPath, "utf-8"));
+    }
+} catch (e) { /* opcional */ }
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+// ── Tracking de dispositivos conectados ──────────────────────────
+let dispositivosConectados = 0;
+
+// ── Exportar io para uso en launcher.js ─────────────────────────
+function getIO() { return io; }
+module.exports = { getIO };
 
 // Función para dividir de forma inteligente la letra en estrofas lógicas
 function dividirEnEstrofas(letraCompleta) {
@@ -82,15 +134,18 @@ function dividirEnEstrofas(letraCompleta) {
 // ==================== MULTER — Subir Fondos ====================
 const uploadStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dest = path.join(__dirname, "public", "assets");
-        cb(null, dest);
+        // Usar ASSETS_DIR que es siempre escribible
+        if (!fs.existsSync(ASSETS_DIR)) {
+            fs.mkdirSync(ASSETS_DIR, { recursive: true });
+        }
+        cb(null, ASSETS_DIR);
     },
     filename: (req, file, cb) => {
         // Mantener nombre original; si ya existe, agregar timestamp
         const ext = path.extname(file.originalname);
         const base = path.basename(file.originalname, ext)
             .replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-        const destPath = path.join(__dirname, "public", "assets", base + ext);
+        const destPath = path.join(ASSETS_DIR, base + ext);
         const finalName = fs.existsSync(destPath) ? `${base}_${Date.now()}${ext}` : `${base}${ext}`;
         cb(null, finalName);
     }
@@ -121,13 +176,14 @@ function convertirCala(rawCala) {
             ? coros[0].lineas.filter(l => l !== '').join('\n')
             : null;
 
-        // Intercalar: estrofa, coro, estrofa, coro...
+        // Intercalar: coro solo después de las primeras 4 estrofas, luego normal
         const estrofasFinales = [];
         let idx = 1;
         soloEstrofas.forEach((est, i) => {
             const texto = est.lineas.filter(l => l !== '').join('\n');
             estrofasFinales.push({ numero: idx++, texto, tipo: 'estrofa' });
-            if (coroTexto) {
+            // Solo intercalar coro después de las primeras 4 estrofas
+            if (coroTexto && i < 4) {
                 estrofasFinales.push({ numero: idx++, texto: coroTexto, tipo: 'coro' });
             }
         });
@@ -228,7 +284,10 @@ try {
 
 // ==================== LÍNEAS PERSONALIZADAS ====================
 // Archivo para persistir ediciones de líneas por cántico
-const lineasOverridePath = path.join(__dirname, "src", "himnarios", "lineas-override.json");
+// En EXE de pkg, usar una ruta escribible junto al ejecutable
+const lineasOverridePath = process.pkg
+    ? path.join(path.dirname(process.execPath), "lineas-override.json")
+    : path.join(__dirname, "src", "himnarios", "lineas-override.json");
 let lineasOverride = {};
 
 try {
@@ -273,18 +332,37 @@ function normalizarTexto(texto) {
         : "";
 }
 
+// Servir la carpeta de assets externos PRIMERO (escribible, junto al exe o en public/assets)
+// Esto tiene prioridad sobre los assets embebidos en el EXE
+app.use("/assets", express.static(ASSETS_DIR));
+
+// En EXE de pkg, servir los assets embebidos bajo /assets/embedded
+if (process.pkg) {
+    const assetsEmbebidos = path.join(__dirname, 'public', 'assets');
+    app.use("/assets/embedded", express.static(assetsEmbebidos));
+}
+
 app.use(express.static("public"));
 app.use(express.json());
 app.use(morgan("dev"));
 
+
 // ==================== CONFIGURACIÓN DE IP LOCAL ====================
 
-// Obtener IP local
+// Obtener IP local — usa network-manager si está disponible, sino fallback propio
 function obtenerIPLocal() {
+    // Si fue invocado desde launcher.js, usar la IP que él detectó
+    if (process.env.CHURCH_IP && process.env.CHURCH_IP !== 'localhost') {
+        return process.env.CHURCH_IP;
+    }
+    // Si network-manager está disponible, usarlo
+    if (networkManager) {
+        return networkManager.obtenerIPLocal();
+    }
+    // Fallback propio (comportamiento original)
     const interfaces = os.networkInterfaces();
     for (const nombre of Object.keys(interfaces)) {
         for (const iface of interfaces[nombre]) {
-            // IPv4 y no localhost
             if (iface.family === 'IPv4' && !iface.internal) {
                 return iface.address;
             }
@@ -294,7 +372,7 @@ function obtenerIPLocal() {
 }
 
 const ipLocal = obtenerIPLocal();
-const puerto = 3000;
+const puerto = process.env.CHURCH_PORT ? parseInt(process.env.CHURCH_PORT) : 3000;
 
 // ==================== VARIABLES GLOBALES ====================
 
@@ -339,6 +417,10 @@ let fondoActual = "/fondo_defecto.PNG";
 let ultimoVersiculo = null;
 
 io.on("connection", (socket) => {
+    // Actualizar contador de dispositivos
+    dispositivosConectados++;
+    io.emit("dispositivos-actualizados", { total: dispositivosConectados });
+
     // Si ya hay un cántico proyectado en esta sesión, lo enviamos al cliente recién conectado
     if (ultimoCanticoProyectado) {
         socket.emit("cambio-estrofa", ultimoCanticoProyectado);
@@ -390,9 +472,19 @@ io.on("connection", (socket) => {
         io.emit("cambiar-fondo", fondoActual);
         io.emit("limpiar-pantalla", data);
     });
+
+    socket.on("disconnect", () => {
+        dispositivosConectados = Math.max(0, dispositivosConectados - 1);
+        io.emit("dispositivos-actualizados", { total: dispositivosConectados });
+    });
 });
 
 // ==================== RUTAS HTML ====================
+
+// Panel de estado del sistema
+app.get("/panel", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "panel.html"));
+});
 
 // Página principal (Controlador)
 app.get("/", (req, res) => {
@@ -419,28 +511,59 @@ app.get("/canticospantalla", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "canticospantalla.html"));
 });
 
-// Endpoint para obtener los fondos dinámicamente desde el directorio public/assets
+// Endpoint para obtener los fondos dinámicamente desde el directorio de assets
 app.get("/api/fondos", (req, res) => {
-    const assetsDir = path.join(__dirname, "public", "assets");
-    fs.readdir(assetsDir, (err, files) => {
-        if (err) {
-            console.error("Error al leer directorio de fondos:", err);
-            return res.status(500).json({ error: "No se pudieron cargar los fondos" });
+    // Leer fondos del directorio escribible (ASSETS_DIR)
+    const leerFondosDir = (dir) => {
+        if (!fs.existsSync(dir)) return [];
+        try {
+            const files = fs.readdirSync(dir);
+            const extensionesValidas = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif", ".mp4"];
+            return files
+                .filter(file => {
+                    const ext = path.extname(file).toLowerCase();
+                    return extensionesValidas.includes(ext) && file.toLowerCase() !== "logo.png";
+                })
+                .map(file => ({
+                    url: `assets/${file}`,
+                    nombre: file.replace(/\.[^.]+$/, ''),
+                    tipo: [".mp4"].includes(path.extname(file).toLowerCase()) ? 'video' :
+                        [".gif"].includes(path.extname(file).toLowerCase()) ? 'gif' : 'imagen'
+                }));
+        } catch (e) {
+            console.error("Error al leer directorio de fondos:", e);
+            return [];
         }
-        const extensionesValidas = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif", ".mp4"];
-        const fondos = files
-            .filter(file => {
-                const ext = path.extname(file).toLowerCase();
-                return extensionesValidas.includes(ext) && file.toLowerCase() !== "logo.png";
-            })
-            .map(file => ({
-                url: `assets/${file}`,
-                nombre: file.replace(/\.[^.]+$/, ''),
-                tipo: [".mp4"].includes(path.extname(file).toLowerCase()) ? 'video' :
-                    [".gif"].includes(path.extname(file).toLowerCase()) ? 'gif' : 'imagen'
-            }));
-        res.json(fondos);
-    });
+    };
+
+    let fondos = leerFondosDir(ASSETS_DIR);
+
+    // Si estamos en EXE, también intentar leer desde public/assets embebido (de solo lectura)
+    if (process.pkg) {
+        try {
+            const assetsEmbebidos = path.join(__dirname, 'public', 'assets');
+            const archivosEmbebidos = fs.readdirSync(assetsEmbebidos);
+            const extensionesValidas = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif", ".mp4"];
+            const fondosEmbebidos = archivosEmbebidos
+                .filter(file => {
+                    const ext = path.extname(file).toLowerCase();
+                    return extensionesValidas.includes(ext) && file.toLowerCase() !== "logo.png";
+                })
+                .map(file => ({
+                    url: `assets/embedded/${file}`,
+                    nombre: file.replace(/\.[^.]+$/, '') + ' (embebido)',
+                    tipo: [".mp4"].includes(path.extname(file).toLowerCase()) ? 'video' :
+                        [".gif"].includes(path.extname(file).toLowerCase()) ? 'gif' : 'imagen'
+                }));
+            // Combinar, evitando duplicados por nombre
+            const nombresExistentes = new Set(fondos.map(f => f.nombre));
+            fondosEmbebidos.forEach(f => {
+                if (!nombresExistentes.has(f.nombre)) fondos.push(f);
+            });
+        } catch (e) { /* ignorar si no hay assets embebidos */ }
+    }
+
+    res.json(fondos);
 });
 
 // ==================== API DE LÍNEAS POR CÁNTICO ====================
@@ -702,13 +825,108 @@ app.get("/api/libros", (req, res) => {
 app.get("/api/info", (req, res) => {
     res.json({
         servidor: 'church-utils',
-        version: '1.0.0',
-        ipLocal: ipLocal,
+        version: '2.0.0',
+        ipLocal: obtenerIPLocal(),
         puerto: puerto,
         urls: {
-            controlador: `http://${ipLocal}:${puerto}`,
-            pantalla: `http://${ipLocal}:${puerto}/pantalla`,
-            app: `http://${ipLocal}:${puerto}/app`
+            panel: `http://${obtenerIPLocal()}:${puerto}/panel`,
+            controlador: `http://${obtenerIPLocal()}:${puerto}`,
+            pantalla: `http://${obtenerIPLocal()}:${puerto}/pantalla`,
+            canticosadmin: `http://${obtenerIPLocal()}:${puerto}/canticosadmin`,
+            canticospantalla: `http://${obtenerIPLocal()}:${puerto}/canticospantalla`
         }
     });
 });
+
+// ==================== API PANEL DE ESTADO ====================
+
+// Estado completo del sistema
+app.get("/api/estado", (req, res) => {
+    const ipActual = obtenerIPLocal();
+    let estadoRed = {
+        tipo: 'desconocido',
+        nombre: '',
+        ip: ipActual,
+        hotspotActivo: false,
+        hotspotSSID: '',
+        sistemaOperativo: os.release()
+    };
+
+    if (networkManager) {
+        const nm = networkManager.detectarRed();
+        estadoRed = { ...nm, ip: ipActual };
+    }
+
+    res.json({
+        servidor: 'activo',
+        version: '2.0.0',
+        ip: ipActual,
+        puerto: puerto,
+        nodeVersion: process.version,
+        red: estadoRed,
+        dispositivosConectados,
+        iglesia: appConfig ? appConfig.iglesia : { nombre: 'Iglesia Vida Nueva', lema: '' },
+        hotspotInstrucciones: null
+    });
+});
+
+// Códigos QR del sistema
+app.get("/api/qr", async (req, res) => {
+    const ipActual = obtenerIPLocal();
+    if (!qrGenerator) {
+        return res.json({});
+    }
+    try {
+        const qrs = await qrGenerator.generarTodosLosQR(ipActual, puerto);
+        res.json(qrs);
+    } catch (e) {
+        console.error('Error generando QR:', e);
+        res.json({});
+    }
+});
+
+// Leer configuración
+app.get("/api/config", (req, res) => {
+    if (appConfig) {
+        return res.json(appConfig);
+    }
+    // Config por defecto si no existe
+    res.json({
+        hotspot: { ssid: 'IGLESIA_VIDA_NUEVA', password: 'VidaNueva2026' },
+        servidor: { puerto: 3000, abrirNavegador: true },
+        iglesia: { nombre: 'Iglesia Vida Nueva', lema: '' }
+    });
+});
+
+// Guardar configuración
+app.post("/api/config", (req, res) => {
+    try {
+        const cfgPath = path.join(__dirname, "config.json");
+        const nueva = req.body;
+
+        // Leer config actual para no perder campos no enviados
+        let actual = appConfig || {};
+        if (nueva.hotspot) actual.hotspot = { ...actual.hotspot, ...nueva.hotspot };
+        if (nueva.iglesia) actual.iglesia = { ...actual.iglesia, ...nueva.iglesia };
+        if (nueva.servidor) actual.servidor = { ...actual.servidor, ...nueva.servidor };
+
+        fs.writeFileSync(cfgPath, JSON.stringify(actual, null, 2), 'utf-8');
+        appConfig = actual;
+
+        res.json({ exito: true });
+    } catch (e) {
+        console.error('Error guardando config:', e);
+        res.status(500).json({ exito: false, error: e.message });
+    }
+});
+// Monitor de RAM solo en modo desarrollo (no en modo launcher)
+if (!process.env.CHURCH_LAUNCHER) {
+    setInterval(() => {
+        const memoria = process.memoryUsage();
+        console.log("RAM:", {
+            rss: Math.round(memoria.rss / 1024 / 1024) + " MB",
+            heapUsed: Math.round(memoria.heapUsed / 1024 / 1024) + " MB",
+            heapTotal: Math.round(memoria.heapTotal / 1024 / 1024) + " MB"
+        });
+    }, 30000);
+}

@@ -41,19 +41,48 @@
       inset: 0;
     }
 
-    .bg-image-1 { background-image: url('/fondo_defecto.PNG'); }
+    .bg-image-1 {
+      background-image: url('/fondo_defecto.PNG');
+    }
 
     /* Gradientes animados */
     @keyframes gradientAnimation {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
-    .gradient-aurora    { background: linear-gradient(135deg,#0A2E36,#1C0A35,#0A1C35,#0f2c1f); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
-    .gradient-atardecer { background: linear-gradient(135deg,#2c0f20,#360a0a,#1a0826,#3b200a); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
-    .gradient-paz       { background: linear-gradient(135deg,#09122c,#161e38,#0e273c,#1f112e); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
-    .gradient-mistico   { background: linear-gradient(135deg,#18092a,#0b1c2b,#2b0b1c,#0d091a); background-size:400% 400%; animation: gradientAnimation 20s ease infinite; }
+    .gradient-aurora {
+      background: linear-gradient(135deg, #0A2E36, #1C0A35, #0A1C35, #0f2c1f);
+      background-size: 400% 400%;
+      animation: gradientAnimation 20s ease infinite;
+    }
+
+    .gradient-atardecer {
+      background: linear-gradient(135deg, #2c0f20, #360a0a, #1a0826, #3b200a);
+      background-size: 400% 400%;
+      animation: gradientAnimation 20s ease infinite;
+    }
+
+    .gradient-paz {
+      background: linear-gradient(135deg, #09122c, #161e38, #0e273c, #1f112e);
+      background-size: 400% 400%;
+      animation: gradientAnimation 20s ease infinite;
+    }
+
+    .gradient-mistico {
+      background: linear-gradient(135deg, #18092a, #0b1c2b, #2b0b1c, #0d091a);
+      background-size: 400% 400%;
+      animation: gradientAnimation 20s ease infinite;
+    }
 
     /* ── Fondo de video MP4 ── */
     #bg-video {
@@ -88,53 +117,93 @@
     }
 
     .blob-1 {
-      width: 75vw; height: 75vw;
+      width: 75vw;
+      height: 75vw;
       background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
-      top: -25%; left: -20%;
+      top: -25%;
+      left: -20%;
       animation: moveBlob1 40s infinite alternate ease-in-out;
     }
 
     .blob-2 {
-      width: 85vw; height: 85vw;
+      width: 85vw;
+      height: 85vw;
       background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
-      bottom: -35%; right: -25%;
+      bottom: -35%;
+      right: -25%;
       animation: moveBlob2 45s infinite alternate ease-in-out;
     }
 
     .blob-3 {
-      width: 65vw; height: 65vw;
+      width: 65vw;
+      height: 65vw;
       background: radial-gradient(circle, #f97316 0%, transparent 70%);
-      top: 25%; left: 35%;
+      top: 25%;
+      left: 35%;
       animation: moveBlob3 50s infinite alternate ease-in-out;
     }
 
     @keyframes moveBlob1 {
-      0%   { transform: translate(0,0) scale(1); }
-      50%  { transform: translate(12%,18%) scale(1.1); }
-      100% { transform: translate(-8%,-10%) scale(0.9); }
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate(12%, 18%) scale(1.1);
+      }
+
+      100% {
+        transform: translate(-8%, -10%) scale(0.9);
+      }
     }
+
     @keyframes moveBlob2 {
-      0%   { transform: translate(0,0) scale(1.05); }
-      50%  { transform: translate(-18%,-12%) scale(0.85); }
-      100% { transform: translate(8%,8%) scale(1.15); }
+      0% {
+        transform: translate(0, 0) scale(1.05);
+      }
+
+      50% {
+        transform: translate(-18%, -12%) scale(0.85);
+      }
+
+      100% {
+        transform: translate(8%, 8%) scale(1.15);
+      }
     }
+
     @keyframes moveBlob3 {
-      0%   { transform: translate(0,0) scale(0.95); }
-      50%  { transform: translate(-10%,15%) scale(1.1); }
-      100% { transform: translate(15%,-15%) scale(0.9); }
+      0% {
+        transform: translate(0, 0) scale(0.95);
+      }
+
+      50% {
+        transform: translate(-10%, 15%) scale(1.1);
+      }
+
+      100% {
+        transform: translate(15%, -15%) scale(0.9);
+      }
     }
 
     @keyframes kenBurns {
-      0%   { transform: scale(1.06) translate(0%,0%); }
-      50%  { transform: scale(1.10) translate(-1.5%,-0.8%); }
-      100% { transform: scale(1.06) translate(1.2%,0.5%); }
+      0% {
+        transform: scale(1.06) translate(0%, 0%);
+      }
+
+      50% {
+        transform: scale(1.10) translate(-1.5%, -0.8%);
+      }
+
+      100% {
+        transform: scale(1.06) translate(1.2%, 0.5%);
+      }
     }
 
     /* Elegant dark vignette */
     .vignette {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, transparent 20%, rgba(3,5,12,0.75) 100%);
+      background: radial-gradient(circle at center, transparent 20%, rgba(3, 5, 12, 0.75) 100%);
       z-index: 3;
       pointer-events: none;
     }
@@ -158,7 +227,7 @@
       letter-spacing: 4px;
       color: #e2c475;
       text-transform: uppercase;
-      text-shadow: 0 2px 8px rgba(226,196,117,0.25);
+      text-shadow: 0 2px 8px rgba(226, 196, 117, 0.25);
       align-self: end;
       transition: opacity 600ms ease;
       font-family: 'Outfit', sans-serif;
@@ -184,12 +253,12 @@
       text-align: center;
       color: #ffffff;
       text-shadow:
-        0 4px 20px rgba(0,0,0,0.75),
-        0 2px 4px rgba(0,0,0,0.5),
-        0 0 60px rgba(0,0,0,0.3);
+        0 4px 20px rgba(0, 0, 0, 0.75),
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(0, 0, 0, 0.3);
       opacity: 1;
       transform: scale(1);
-      transition: opacity 500ms cubic-bezier(0.25,1,0.5,1), transform 900ms cubic-bezier(0.25,1,0.5,1);
+      transition: opacity 500ms cubic-bezier(0.25, 1, 0.5, 1), transform 900ms cubic-bezier(0.25, 1, 0.5, 1);
       max-width: 90%;
       word-wrap: break-word;
     }
@@ -197,19 +266,19 @@
     .lyrics-content.hidden-state {
       opacity: 0;
       transform: scale(1.025);
-      transition: opacity 600ms cubic-bezier(0.25,1,0.5,1), transform 500ms cubic-bezier(0.25,1,0.5,1);
+      transition: opacity 600ms cubic-bezier(0.25, 1, 0.5, 1), transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* Verse indicator */
     .verse-indicator {
       text-align: center;
       font-size: clamp(0.85rem, 1.8vw, 1.1rem);
-      color: rgba(255,255,255,0.35);
+      color: rgba(255, 255, 255, 0.35);
       letter-spacing: 2px;
       text-transform: uppercase;
       align-self: start;
       transition: opacity 600ms ease;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     }
 
     /* Waiting state */
@@ -217,7 +286,7 @@
       font-family: 'Cormorant Garamond', serif;
       font-style: italic;
       font-weight: 400;
-      color: rgba(255,255,255,0.4) !important;
+      color: rgba(255, 255, 255, 0.4) !important;
     }
 
     /* Logo */
@@ -231,7 +300,7 @@
     .logo img {
       width: 100px;
       height: auto;
-      filter: drop-shadow(0 0 15px rgba(255,255,255,0.433)) drop-shadow(0 0 40px rgba(255,185,7,0.3));
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.433)) drop-shadow(0 0 40px rgba(255, 185, 7, 0.3));
       animation: aparecerLogo 1.5s ease-out, brilloLogo 4s ease-in-out infinite;
     }
 
@@ -239,17 +308,31 @@
       font-size: 36px;
       display: none;
       color: #e2c475;
-      text-shadow: 0 0 10px rgba(226,196,117,0.5);
+      text-shadow: 0 0 10px rgba(226, 196, 117, 0.5);
     }
 
     @keyframes aparecerLogo {
-      from { opacity: 0; transform: scale(0.9); }
-      to   { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @keyframes brilloLogo {
-      0%, 100% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.5)) drop-shadow(0 0 40px rgba(255,255,255,0.3)); }
-      50%       { filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)) drop-shadow(0 0 60px rgba(255,255,255,0.5)); }
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.3));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 60px rgba(255, 255, 255, 0.5));
+      }
     }
 
     /* ── BANNER IGLESIA VIDA NUEVA (permanente, parte inferior) ── */
@@ -290,7 +373,7 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: #e2c475;
-      text-shadow: 0 0 16px rgba(226, 196, 117, 0.4), 0 2px 8px rgba(0,0,0,0.6);
+      text-shadow: 0 0 16px rgba(226, 196, 117, 0.4), 0 2px 8px rgba(0, 0, 0, 0.6);
     }
 
     .iglesia-lema {
@@ -301,24 +384,34 @@
       letter-spacing: 0.10em;
       color: rgba(245, 240, 232, 0.42);
     }
-    /* ── ESTILO ESPECIAL PARA COROS (Iglesia de Dios) ── */
+
+    /* ── ESTILO ESPECIAL PARA COROS ── */
     .lyrics-content.es-coro {
-      color: #ffd700;
-      text-shadow:
-        0 0 20px rgba(255, 215, 0, 0.9),
-        0 0 40px rgba(255, 180, 0, 0.7),
-        0 0 80px rgba(255, 150, 0, 0.5),
-        0 4px 20px rgba(0,0,0,0.6);
-      animation: coroShimmer 3s ease-in-out infinite alternate;
+      color: #fff;
+      background: linear-gradient(135deg, #ec9d0b 0%, #ec9d0b 25%, #ec9d0b 50%, #ec9d0b 75%, #ec9d0b 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+
+      background-clip: text;
+      animation: coroShimmer 6s ease-in-out infinite;
+      filter: drop-shadow(0 2px 12px rgba(254, 220, 48, 0.5)) drop-shadow(0 0 40px rgba(255, 145, 0, 0.3));
     }
 
     @keyframes coroShimmer {
-      0%   { text-shadow: 0 0 20px rgba(255,215,0,0.9), 0 0 50px rgba(255,180,0,0.7), 0 0 100px rgba(255,150,0,0.5); filter: brightness(1); }
-      50%  { text-shadow: 0 0 30px rgba(255,230,0,1),   0 0 70px rgba(255,200,0,0.9), 0 0 140px rgba(255,170,0,0.7); filter: brightness(1.15); }
-      100% { text-shadow: 0 0 25px rgba(255,215,0,0.95),0 0 60px rgba(255,190,0,0.8), 0 0 120px rgba(255,160,0,0.6); filter: brightness(1.08); }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
-    /* Partículas doradas para coros */
+    /* Partículas elegantes para coros */
     .particulas-coro {
       position: fixed;
       inset: 0;
@@ -332,16 +425,29 @@
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background: radial-gradient(circle, #ffd700 30%, rgba(255,200,0,0.3) 100%);
+      background: radial-gradient(circle, rgba(220, 200, 255, 0.9) 30%, rgba(180, 160, 230, 0.3) 100%);
       opacity: 0;
       animation: floatParticula var(--dur, 4s) var(--delay, 0s) ease-in infinite;
     }
 
     @keyframes floatParticula {
-      0%   { transform: translate(0, 0) scale(0.5); opacity: 0; }
-      10%  { opacity: 0.9; }
-      80%  { opacity: 0.4; }
-      100% { transform: translate(var(--dx, 20px), var(--dy, -120px)) scale(1.5); opacity: 0; }
+      0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.7;
+      }
+
+      80% {
+        opacity: 0.3;
+      }
+
+      100% {
+        transform: translate(var(--dx, 20px), var(--dy, -120px)) scale(1.5);
+        opacity: 0;
+      }
     }
   </style>
 </head>
@@ -407,21 +513,21 @@
     let currentActiveBgLayer = 1;
 
     function setWorshipBackground(bgValue) {
-      const layer1   = document.querySelector(".bg-image-1");
-      const layer2   = document.querySelector(".bg-image-2");
-      const videoEl  = document.getElementById("bg-video");
+      const layer1 = document.querySelector(".bg-image-1");
+      const layer2 = document.querySelector(".bg-image-2");
+      const videoEl = document.getElementById("bg-video");
       if (!layer1 || !layer2 || !videoEl) return;
 
-      const activeImgLayer   = currentActiveBgLayer === 1 ? layer1 : layer2;
+      const activeImgLayer = currentActiveBgLayer === 1 ? layer1 : layer2;
       const inactiveImgLayer = currentActiveBgLayer === 1 ? layer2 : layer1;
 
       // Reset clase/imagen en la capa inactiva
       inactiveImgLayer.className = "bg " + (currentActiveBgLayer === 1 ? "bg-image-2" : "bg-image-1");
       inactiveImgLayer.style.backgroundImage = "";
 
-      const isVideo    = bgValue && bgValue.toLowerCase().endsWith('.mp4');
+      const isVideo = bgValue && bgValue.toLowerCase().endsWith('.mp4');
       const isGradient = bgValue && bgValue.startsWith('gradient:');
-      const isGif      = bgValue && bgValue.toLowerCase().endsWith('.gif');
+      const isGif = bgValue && bgValue.toLowerCase().endsWith('.gif');
 
       if (isVideo) {
         const formattedUrl = bgValue.startsWith('/') ? bgValue : '/' + bgValue;
@@ -429,8 +535,8 @@
         videoEl.load();
         videoEl.play().catch(e => console.log("Reproducción automática prevenida", e));
         videoEl.style.opacity = "1";
-        layer1.style.opacity  = "0";
-        layer2.style.opacity  = "0";
+        layer1.style.opacity = "0";
+        layer2.style.opacity = "0";
       } else {
         // Desvanecer video si estaba activo
         videoEl.style.opacity = "0";
@@ -452,7 +558,7 @@
 
         // Cross-fade
         inactiveImgLayer.style.opacity = "1";
-        activeImgLayer.style.opacity   = "0";
+        activeImgLayer.style.opacity = "0";
         currentActiveBgLayer = currentActiveBgLayer === 1 ? 2 : 1;
       }
     }
@@ -467,14 +573,14 @@
     });
 
     function updateDisplay(data) {
-      const titleEl     = document.getElementById('song-title');
-      const lyricsEl    = document.getElementById('lyrics-content');
+      const titleEl = document.getElementById('song-title');
+      const lyricsEl = document.getElementById('lyrics-content');
       const indicatorEl = document.getElementById('verse-indicator');
-      const esCoro      = data.esCoro === true;
+      const esCoro = data.esCoro === true;
 
       // Fade out
       lyricsEl.classList.add('hidden-state');
-      titleEl.style.opacity     = '0';
+      titleEl.style.opacity = '0';
       indicatorEl.style.opacity = '0';
 
       setTimeout(() => {
@@ -498,12 +604,34 @@
           detenerParticulas();
         }
 
-        titleEl.style.opacity     = '0.8';
+        titleEl.style.opacity = '0.8';
         indicatorEl.style.opacity = esCoro ? '0.85' : '0.35';
 
         // Fade back in
         lyricsEl.classList.remove('hidden-state');
+
+        // Auto-fit: ajustar tamaño para que quepa en pantalla
+        autoFitText(lyricsEl);
       }, 600);
+    }
+
+    // ── Auto-fit text — reduce font-size until text fits in viewport ─────
+    function autoFitText(el) {
+      const wrapper = el.parentElement; // .lyrics-wrapper
+      if (!wrapper) return;
+      const maxH = wrapper.clientHeight * 0.95;
+      const maxW = wrapper.clientWidth * 0.95;
+
+      // Reset to base size
+      el.style.fontSize = '';
+      let currentSize = parseFloat(getComputedStyle(el).fontSize);
+      const minSize = 18; // never go below 18px
+
+      // Reduce font size iteratively until it fits
+      while ((el.scrollHeight > maxH || el.scrollWidth > maxW) && currentSize > minSize) {
+        currentSize -= 2;
+        el.style.fontSize = currentSize + 'px';
+      }
     }
 
     // ── Partículas doradas para coro ────────────────────────────────
@@ -557,8 +685,8 @@
     // ── Limpiar pantalla (terminar canto) ────────────────────────────────
     socket.on("limpiar-pantalla", (data) => {
       if (data && data.tipo === 'cantico') {
-        const titleEl     = document.getElementById('song-title');
-        const lyricsEl    = document.getElementById('lyrics-content');
+        const titleEl = document.getElementById('song-title');
+        const lyricsEl = document.getElementById('lyrics-content');
         const indicatorEl = document.getElementById('verse-indicator');
 
         // Detener partículas
@@ -566,7 +694,7 @@
 
         // Fade out
         lyricsEl.classList.add('hidden-state');
-        titleEl.style.opacity     = '0';
+        titleEl.style.opacity = '0';
         indicatorEl.style.opacity = '0';
 
         setTimeout(() => {

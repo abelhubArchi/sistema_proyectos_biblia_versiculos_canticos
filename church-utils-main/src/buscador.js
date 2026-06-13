@@ -172,16 +172,43 @@ const abreviaturasLibros = {
 let indexCache = null;
 let bibliaCache = {};
 
+// Resolver la ruta base de la biblia de forma robusta:
+// - En desarrollo: __dirname = src/ → ../dist/biblia
+// - En EXE pkg:    __dirname = snapshot → ../dist/biblia también funciona
+// - Fallback extra: junto al ejecutable en disco
+function resolverRutaBiblia() {
+  // Primera opción: relativa al código fuente (src/buscador.js → dist/biblia)
+  const ruta1 = path.join(__dirname, '..', 'dist', 'biblia');
+  if (fs.existsSync(path.join(ruta1, '_index.json'))) return ruta1;
+
+  // Segunda opción: junto al ejecutable en disco (para EXE fuera de snapshot)
+  const execDir = path.dirname(process.execPath);
+  const ruta2 = path.join(execDir, 'dist', 'biblia');
+  if (fs.existsSync(path.join(ruta2, '_index.json'))) return ruta2;
+
+  // Tercera opción: directorio de trabajo actual
+  const ruta3 = path.join(process.cwd(), 'dist', 'biblia');
+  if (fs.existsSync(path.join(ruta3, '_index.json'))) return ruta3;
+
+  // Cuarta opción: junto al EXE sin subcarpeta dist
+  const ruta4 = path.join(execDir, 'biblia');
+  if (fs.existsSync(path.join(ruta4, '_index.json'))) return ruta4;
+
+  return ruta1; // fallback
+}
+
+const BIBLIA_DIR = resolverRutaBiblia();
+
 // Cargar índice de libros
 function cargarIndice() {
   if (indexCache) return indexCache;
   
   try {
-    const data = fs.readFileSync('./dist/biblia/_index.json', 'utf-8');
+    const data = fs.readFileSync(path.join(BIBLIA_DIR, '_index.json'), 'utf-8');
     indexCache = JSON.parse(data);
     return indexCache;
   } catch (error) {
-    console.error('Error al cargar índice:', error);
+    console.error('Error al cargar índice de Biblia. Ruta intentada:', BIBLIA_DIR, error.message);
     return [];
   }
 }
@@ -191,7 +218,7 @@ function cargarLibro(libro) {
   if (bibliaCache[libro]) return bibliaCache[libro];
   
   try {
-    const data = fs.readFileSync(`./dist/biblia/${libro}.json`, 'utf-8');
+    const data = fs.readFileSync(path.join(BIBLIA_DIR, `${libro}.json`), 'utf-8');
     bibliaCache[libro] = JSON.parse(data);
     return bibliaCache[libro];
   } catch (error) {

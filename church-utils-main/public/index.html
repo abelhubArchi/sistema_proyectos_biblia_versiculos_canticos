@@ -255,6 +255,10 @@
         <div id="error" class="error"></div>
         <div id="loading" class="loading">⏳ Buscando...</div>
         <div id="resultados" class="resultados"></div>
+    <div class="nav-buttons" style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+        <button class="ejemplo-btn" onclick="prevVersiculo()" style="background:#667eea; color:white; font-weight:600;">◀ Anterior</button>
+        <button class="ejemplo-btn" onclick="nextVersiculo()" style="background:#667eea; color:white; font-weight:600;">Siguiente ▶</button>
+    </div>
         <div class="info"> Escribe una cita (ej: apo 21:4) o una palabra para buscar</div>
 
         <div class="control-panel-extras" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
@@ -276,12 +280,46 @@
             <h4 style="font-size: 13px; color: #666; margin-bottom: 10px; text-align: center; font-family: inherit;">
                 Fondo de Proyección de Versículos</h4>
             <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                <button class="ejemplo-btn" onclick="cambiarFondo('assets/1.jpg')"> Amanecer (Fondo 1)</button>
-                <button class="ejemplo-btn" onclick="cambiarFondo('assets/2.jpg')"> Galaxia (Fondo 2)</button>
-                <button class="ejemplo-btn" onclick="cambiarFondo('assets/3.jpg')"> Océano (Fondo 3)</button>
-                <button class="ejemplo-btn" onclick="cambiarFondo('assets/4.jpg')"> Naturaleza (Fondo 4)</button>
-                <button class="ejemplo-btn" onclick="cambiarFondo('assets/background.jpg')"> Clásico (Fondo 5)</button>
+                <button class="ejemplo-btn" onclick="abrirFondoModal()" style="background: #667eea; color: white; font-weight: 600;">
+                    🌅 Seleccionar Fondo
+                </button>
+                <button class="ejemplo-btn" onclick="triggerSubirFondo()" style="background: #10b981; color: white; font-weight: 600;">
+                    📤 Subir Fondo
+                </button>
+                <input type="file" id="subir-fondo-input" accept=".jpg,.jpeg,.png,.gif,.webp" style="display:none" onchange="subirFondoArchivo(this)">
             </div>
+        </div>
+    </div>
+
+    <!-- Modal para Cambiar Fondo -->
+    <div id="fondo-modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; border-radius:16px; padding:24px; width:100%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.25s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">
+                <h3 style="font-size:1.1rem; color:#333; margin:0;">Seleccionar Fondo de Proyección</h3>
+                <span style="font-size:24px; cursor:pointer; color:#999; line-height:1;" onclick="cerrarFondoModal()">&times;</span>
+            </div>
+            <div id="fondos-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:12px; max-height:300px; overflow-y:auto; padding-right:6px; margin-bottom:12px;">
+                <!-- Fondos dinámicos -->
+            </div>
+            <!-- Colores animados -->
+            <div style="border-top:1px solid #eee; padding-top:12px;">
+                <div style="font-size:0.75rem; color:#999; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Colores Animados</div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+                    <div onclick="seleccionarFondo('gradient:aurora')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid #e0e0e0;background:linear-gradient(135deg,#0A2E36,#1C0A35,#0A1C35,#0f2c1f);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Aurora">
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.8);width:100%;text-align:center;">Aurora</span>
+                    </div>
+                    <div onclick="seleccionarFondo('gradient:atardecer')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid #e0e0e0;background:linear-gradient(135deg,#2c0f20,#360a0a,#1a0826,#3b200a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Atardecer">
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.8);width:100%;text-align:center;">Atardecer</span>
+                    </div>
+                    <div onclick="seleccionarFondo('gradient:paz')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid #e0e0e0;background:linear-gradient(135deg,#09122c,#161e38,#0e273c,#1f112e);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Paz">
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.8);width:100%;text-align:center;">Paz</span>
+                    </div>
+                    <div onclick="seleccionarFondo('gradient:mistico')" style="height:50px;border-radius:8px;cursor:pointer;border:2px solid #e0e0e0;background:linear-gradient(135deg,#18092a,#0b1c2b,#2b0b1c,#0d091a);background-size:400% 400%;animation:modalGrad 6s ease infinite;display:flex;align-items:flex-end;padding:4px;" title="Místico">
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.8);width:100%;text-align:center;">Místico</span>
+                    </div>
+                </div>
+            </div>
+            <style>@keyframes modalGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}</style>
         </div>
     </div>
 
@@ -296,6 +334,14 @@
 
         let timeoutPredic = null;
         let selectedIndex = -1;
+        
+        let estadoVersiculos = {
+            resultados: [],
+            indice: 0,
+            libro: null,
+            capitulo: null,
+            versiculo: null
+        };
 
         // Evento para predicciones en tiempo real
         buscadorInput.addEventListener('input', (e) => {
@@ -461,6 +507,11 @@
                 if (data.tipo === 'error') {
                     mostrarError(data.mensaje);
                 } else if (data.resultados && data.resultados.length > 0) {
+                    estadoVersiculos.resultados = data.resultados;
+                    estadoVersiculos.indice = 0;
+                    estadoVersiculos.libro = data.resultados[0].libro;
+                    estadoVersiculos.capitulo = data.resultados[0].capitulo;
+                    estadoVersiculos.versiculo = data.resultados[0].versiculo;
                     mostrarResultados(data.resultados);
                 } else {
                     mostrarError('No se encontraron resultados');
@@ -506,6 +557,183 @@
 
         function quitarVersiculo() {
             socket.emit("limpiar-pantalla", { tipo: 'versiculo' });
+        }
+
+        async function nextVersiculo() {
+            if (!estadoVersiculos.resultados || estadoVersiculos.resultados.length === 0) return;
+            
+            if (estadoVersiculos.indice < estadoVersiculos.resultados.length - 1) {
+                estadoVersiculos.indice++;
+                const verso = estadoVersiculos.resultados[estadoVersiculos.indice];
+                estadoVersiculos.libro = verso.libro;
+                estadoVersiculos.capitulo = verso.capitulo;
+                estadoVersiculos.versiculo = verso.versiculo;
+                
+                socket.emit("navegar-versiculo", "siguiente");
+            } else {
+                try {
+                    const response = await fetch('/api/versiculo-siguiente', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            libro: estadoVersiculos.libro,
+                            capitulo: estadoVersiculos.capitulo,
+                            versiculo: estadoVersiculos.versiculo
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.verso) {
+                        const query = `${data.verso.libroNombre || data.verso.libro} ${data.verso.capitulo}:${data.verso.versiculo}`;
+                        document.getElementById('buscador').value = query;
+                        buscar(query);
+                    }
+                } catch (error) {
+                    console.error('Error al obtener versículo siguiente:', error);
+                }
+            }
+        }
+
+        async function prevVersiculo() {
+            if (!estadoVersiculos.resultados || estadoVersiculos.resultados.length === 0) return;
+            
+            if (estadoVersiculos.indice > 0) {
+                estadoVersiculos.indice--;
+                const verso = estadoVersiculos.resultados[estadoVersiculos.indice];
+                estadoVersiculos.libro = verso.libro;
+                estadoVersiculos.capitulo = verso.capitulo;
+                estadoVersiculos.versiculo = verso.versiculo;
+                
+                socket.emit("navegar-versiculo", "anterior");
+            } else {
+                try {
+                    const response = await fetch('/api/versiculo-anterior', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            libro: estadoVersiculos.libro,
+                            capitulo: estadoVersiculos.capitulo,
+                            versiculo: estadoVersiculos.versiculo
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.verso) {
+                        const query = `${data.verso.libroNombre || data.verso.libro} ${data.verso.capitulo}:${data.verso.versiculo}`;
+                        document.getElementById('buscador').value = query;
+                        buscar(query);
+                    }
+                } catch (error) {
+                    console.error('Error al obtener versículo anterior:', error);
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // SISTEMA DE FONDOS — modal + subida (igual que en canticosadmin)
+        // ══════════════════════════════════════════════════════════════
+        let fondosList = [];
+        let fondoActualActivo = "";
+
+        // Sincronizar fondo actual con otros clientes
+        socket.on("cambiar-fondo", (url) => {
+            fondoActualActivo = url;
+            actualizarFondoActivoUI();
+        });
+
+        async function abrirFondoModal() {
+            const modal = document.getElementById('fondo-modal');
+            modal.style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/fondos');
+                fondosList = await response.json();
+                renderFondosGrid();
+            } catch (err) {
+                console.error("Error al cargar los fondos:", err);
+            }
+        }
+
+        function cerrarFondoModal() {
+            const modal = document.getElementById('fondo-modal');
+            modal.style.display = 'none';
+        }
+
+        function renderFondosGrid() {
+            const grid = document.getElementById('fondos-grid');
+            if (!grid) return;
+
+            if (fondosList.length === 0) {
+                grid.innerHTML = '<div style="grid-column: span 3; text-align: center; color: #999;">No se encontraron fondos</div>';
+                return;
+            }
+
+            grid.innerHTML = fondosList.map(fondo => {
+                const url = fondo.url || fondo;
+                const nombre = (fondo.nombre || url.split('/').pop().split('.').shift());
+                const tipo = fondo.tipo || 'imagen';
+                const isActivo = (url === fondoActualActivo || ('/' + url) === fondoActualActivo || url === ('/' + fondoActualActivo));
+                return `
+                    <div style="cursor:pointer; border-radius:8px; overflow:hidden; border:2px solid ${isActivo ? '#667eea' : '#e0e0e0'}; aspect-ratio:16/9; position:relative; background-size:cover; background-position:center; background-image:url('/${url}'); transition:all 0.2s; ${isActivo ? 'box-shadow:0 0 8px rgba(102,126,234,0.4);' : ''}" 
+                         onclick="seleccionarFondo('${url}')"
+                         onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); color:white; font-size:0.65rem; padding:2px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${nombre}${tipo !== 'imagen' ? ' (' + tipo + ')' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function seleccionarFondo(url) {
+            const fullUrl = url.startsWith('gradient:') ? url : '/' + url;
+            fondoActualActivo = fullUrl;
+            socket.emit("cambiar-fondo", fullUrl);
+            actualizarFondoActivoUI();
+            cerrarFondoModal();
+        }
+
+        function actualizarFondoActivoUI() {
+            // Re-render grid if modal is open
+            const modal = document.getElementById('fondo-modal');
+            if (modal && modal.style.display === 'flex') {
+                renderFondosGrid();
+            }
+        }
+
+        // Cerrar modal al hacer click fuera del contenido
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('fondo-modal');
+            if (e.target === modal) {
+                cerrarFondoModal();
+            }
+        });
+
+        // Función para subir un fondo desde archivo
+        function triggerSubirFondo() {
+            document.getElementById('subir-fondo-input').click();
+        }
+
+        async function subirFondoArchivo(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('fondo', file);
+            try {
+                const res = await fetch('/api/subir-fondo', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.exito) {
+                    // Abrir modal y auto-seleccionar el fondo nuevo
+                    await abrirFondoModal();
+                    seleccionarFondo(data.url);
+                    alert(`✅ Fondo "${data.nombre}" subido exitosamente`);
+                } else {
+                    alert('Error al subir el fondo: ' + (data.error || 'desconocido'));
+                }
+            } catch (e) {
+                alert('Error de red al subir el fondo.');
+                console.error(e);
+            }
+            // Reset input para permitir subir el mismo archivo otra vez
+            input.value = '';
         }
     </script>
 </body>

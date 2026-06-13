@@ -16,3 +16,11 @@ Ejecuta el comando `yarn start` para generar los archivos. Ve a `./dist` para en
 
 - [ ] Palabras de Cristo en rojo
 - [ ] Títulos de las secciones de la Biblia
+
+
+# Iniciar el sistema completo
+node launcher.js
+# Generar el .exe (requiere pkg instalado)
+npm install -g pkg
+npm run build:exe
+# → dist\IglesiaVidaNueva.exe  (doble clic y listo)
